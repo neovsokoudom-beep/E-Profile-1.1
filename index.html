@@ -1245,6 +1245,28 @@ function renderPanel() {
 // This is the core fix: save form data from each panel individually
 // so that when we switch panels, data is preserved
 var panelData = {};
+var PANEL_DRAFT_STORE_KEY = 'eprofile_panel_draft';
+
+function savePanelDraft_() {
+  try {
+    localStorage.setItem(PANEL_DRAFT_STORE_KEY, JSON.stringify(panelData || {}));
+  } catch (e) {}
+}
+
+function loadPanelDraft_() {
+  try {
+    var raw = localStorage.getItem(PANEL_DRAFT_STORE_KEY);
+    if (!raw) return;
+    var parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object') panelData = parsed;
+  } catch (e) {}
+}
+
+function clearPanelDraft_() {
+  try {
+    localStorage.removeItem(PANEL_DRAFT_STORE_KEY);
+  } catch (e) {}
+}
 
 var PANEL_PREFIX_TO_ID = {
   info: 'info',
@@ -1315,6 +1337,7 @@ function savePanelData() {
   });
   syncSharedSelections_(data);
   panelData[pid] = data;
+  savePanelDraft_();
 }
 
 function isAddressCascadeField_(id) {
@@ -2331,6 +2354,7 @@ async function saveProgress() {
     if (idx >= 0) records[idx] = rec; else records.push(rec);
     localStorage.setItem('eprofile_records', JSON.stringify(records));
   } catch(e) {}
+  savePanelDraft_();
   // Update the employee record table
   if (typeof updateEmpSummary === 'function') updateEmpSummary();
   showToast('Saved locally! (ID: ' + id + ')', 'success');
@@ -2415,6 +2439,7 @@ async function rejectAndNew() {
 function newRecord() {
   if (!confirm('\u1785\u17B6\u1794\u17CB\u1795\u17D2\u178F\u17BE\u1798\u1791\u17B7\u1793\u17D2\u1793\u1793\u17D0\u1799\u1790\u17D2\u1798\u17B8?')) return;
   panelData = {};
+  clearPanelDraft_();
   goTo(0);
   showToast('\u1785\u17B6\u1794\u17CB\u1795\u17D2\u178F\u17BE\u1798\u1791\u17B7\u1793\u17D2\u1793\u1793\u17D0\u1799\u1790\u17D2\u1798\u17B8!', 'success');
 }
@@ -2522,14 +2547,22 @@ initFileDB();
 function startNew() {
   if (!confirm('\u1785\u1784\u17CB\u1785\u17B6\u1794\u17CB\u1795\u17D2\u178F\u17BE\u1798\u1791\u17B7\u1793\u17D2\u1793\u1793\u17D0\u1799\u1790\u17D2\u1798\u17B8?')) return;
   panelData = {};
+  clearPanelDraft_();
   goTo(0);
   showToast('\u1785\u17B6\u1794\u17CB\u1795\u17D2\u178F\u17BE\u1798\u1791\u17B7\u1793\u17D2\u1793\u1793\u17D0\u1799\u1790\u17D2\u1798\u17B8!', 'success');
 }
 
 // ─── Init ───
+loadPanelDraft_();
 renderPanel();
 // Restore any previously saved data for the initial panel
 setTimeout(restorePanelData, 200);
+window.addEventListener('beforeunload', function() {
+  try {
+    savePanelData();
+    savePanelDraft_();
+  } catch (e) {}
+});
 (async function initCsvLoadCheck_() {
   await ensureVillageDataLoaded_();
 })();
