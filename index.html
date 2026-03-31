@@ -443,6 +443,10 @@ body {
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
         📋 នាំចេញរបាយការណ៍ (Report)
       </button>
+      <button class="btn-export" onclick="exportPrintPdfReport()">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5V4.875c0-.621.504-1.125 1.125-1.125h8.25c.621 0 1.125.504 1.125 1.125V7.5m-10.5 0h10.5m-10.5 0A2.25 2.25 0 0 0 4.5 9.75v5.625a2.25 2.25 0 0 0 2.25 2.25h.75m9.75-10.125A2.25 2.25 0 0 1 19.5 9.75v5.625a2.25 2.25 0 0 1-2.25 2.25h-.75m-9 0h9m-9 0v1.5c0 .621.504 1.125 1.125 1.125h6.75c.621 0 1.125-.504 1.125-1.125v-1.5"/></svg>
+        🖨️ បោះពុម្ព PDF (Print)
+      </button>
       <button class="btn-export backup-btn" onclick="exportExcelBackup()">
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125v-3.75"/></svg>
         💾 បម្រុងទុកទិន្នន័យ (Backup)
@@ -2316,6 +2320,51 @@ function exportExcelReport() {
   XLSX.utils.book_append_sheet(wb, ws, "Report");
   XLSX.writeFile(wb, "eProfile_Report_" + getTimestamp() + ".xlsx");
   showToast("នាំចេញរបាយការណ៍ Excel ដោយជោគជ័យ!", "success");
+}
+
+function exportPrintPdfReport() {
+  var d = getMergedData();
+  var rows = buildSummaryReportRows_(d, 'បោះពុម្ព PDF');
+  var bodyRows = rows.map(function(r) {
+    return '<tr>' +
+      '<td>' + String(r[0] || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</td>' +
+      '<td>' + String(r[1] || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</td>' +
+      '<td>' + String(r[2] || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</td>' +
+      '</tr>';
+  }).join('');
+
+  var title = 'ព័ត៌មានសង្ខេបរបស់និយោជិត';
+  var printHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+    '<title>' + title + '</title>' +
+    '<style>' +
+    '@page { size: A4 portrait; margin: 10mm; }' +
+    'html,body{margin:0;padding:0;background:#fff;}' +
+    'body{font-family: Battambang, \'Noto Sans Khmer\', sans-serif; color:#1a2332; font-size:12px;}' +
+    '.page{width:190mm;min-height:277mm;margin:0 auto;}' +
+    'h1{font-size:18px; margin:0 0 10px; text-align:center;}' +
+    '.meta{font-size:11px; color:#4b5c72; margin-bottom:10px; text-align:center;}' +
+    'table{width:100%; border-collapse:collapse; table-layout:fixed;}' +
+    'td{border:1px solid #d5deea; padding:6px 8px; vertical-align:top; word-break:break-word;}' +
+    'td:nth-child(1){width:20%; font-weight:700; color:#0e3d99;}' +
+    'td:nth-child(2){width:28%; font-weight:700;}' +
+    'td:nth-child(3){width:52%;}' +
+    'tr:nth-child(odd){background:#f8fbff;}' +
+    '</style></head><body><div class="page">' +
+    '<h1>' + title + '</h1>' +
+    '<div class="meta">បោះពុម្ពនៅ: ' + new Date().toLocaleString('km-KH') + '</div>' +
+    '<table>' + bodyRows + '</table>' +
+    '<script>window.onload=function(){setTimeout(function(){window.print();},250);}<\/script>' +
+    '</div></body></html>';
+
+  var printWin = window.open('', '_blank');
+  if (!printWin) {
+    showToast('Browser បានបិទ popup. សូមអនុញ្ញាត popup រួចសាកម្តងទៀត។', 'error');
+    return;
+  }
+  printWin.document.open();
+  printWin.document.write(printHtml);
+  printWin.document.close();
+  showToast('បើកទំព័របោះពុម្ពរួចរាល់។ សូមជ្រើស Save as PDF។', 'success');
 }
 
 // ─── 3. Export Backup ───
