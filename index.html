@@ -275,6 +275,22 @@ body {
 .date-inner input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
 .date-check { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-muted); white-space: nowrap; cursor: pointer; }
 .date-check input { accent-color: var(--accent); }
+.date-year-wrap { display: flex; align-items: center; gap: 8px; }
+.date-year-wrap input[type="date"] { flex: 1; }
+.date-year-select {
+  width: 96px; height: 40px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--card); color: var(--text);
+  padding: 0 8px; font: inherit; font-size: 12px; font-weight: 700;
+  outline: 0;
+}
+.date-year-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+
+.summary-view {
+  min-height: 40px; padding: 9px 12px; border-radius: var(--radius);
+  border: 1px solid var(--card-border); background: var(--input-bg);
+  color: var(--text); font-size: 13px; line-height: 1.5;
+  display: flex; align-items: center;
+}
 
 /* ─── Ministry Block ─── */
 .ministry-row { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
@@ -431,6 +447,10 @@ body {
         <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125v-3.75"/></svg>
         💾 បម្រុងទុកទិន្នន័យ (Backup)
       </button>
+      <button class="btn-export" onclick="exportAllEmployeesExcel()">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m0 0 6-6m-6 6-6-6"/><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 19.5h16.5"/></svg>
+        📦 នាំចេញទាំងអស់ (All Employees)
+      </button>
       
     </div>
     <div class="card" id="cardContainer"></div>
@@ -449,12 +469,12 @@ body {
 const PROVINCES = ["ភ្នំពេញ","កណ្ដាល","កំពង់ចាម","កំពង់ឆ្នាំង","កំពង់ស្ពឺ","កំពង់ធំ","កំពត","កោះកុង","ក្រចេះ","មណ្ឌលគិរី","បន្ទាយមានជ័យ","បាត់ដំបង","ព្រះវិហារ","ព្រៃវែង","ពោធិ៍សាត់","រតនគិរី","សៀមរាប","ព្រះសីហនុ","ស្ទឹងត្រែង","ស្វាយរៀង","តាកែវ","កែប","ប៉ៃលិន","ឧត្តរមានជ័យ","ត្បូងឃ្មុំ"];
 const MINISTRIES = ["ក្រសួងមហាផ្ទៃ","ក្រសួងការពារជាតិ","ក្រសួងសេដ្ឋកិច្ច និងហិរញ្ញវត្ថុ","ក្រសួងអប់រំ យុវជន និងកីឡា","ក្រសួងសុខាភិបាល","ក្រសួងការងារ និងបណ្ដុះបណ្ដាលវិជ្ជាជីវៈ","ក្រសួងការបរទេស","ក្រសួងយុត្តិធម៌","ក្រសួងកសិកម្ម រុក្ខាប្រមាញ់ និងនេសាទ","ក្រសួងពាណិជ្ជកម្ម","ក្រសួងសាធារណការ និងដឹកជញ្ជូន","ក្រសួងប្រៃសណីយ៍ និងទូរគមនាគមន៍","ក្រសួងបរិស្ថាន","ក្រសួងទេសចរណ៍","ក្រសួងធនធានទឹក និងឧតុនិយម"];
 const ETHNICITIES = ["ខ្មែរ","ចិន","វៀតណាម","ចាម","ឡាវ","ថៃ","ផ្សេងៗ"];
-const NATIONALITIES = ["កម្ពុជា","ចិន","វៀតណាម","ថៃ","ឡាវ","ផ្សេងៗ"];
+const NATIONALITIES = ["ខ្មែរ","ចិន","វៀតណាម","ថៃ","ឡាវ","ផ្សេងៗ"];
 const LANGUAGES = ["ខ្មែរ","អង់គ្លេស","បារាំង","ចិន","វៀតណាម","ថៃ","ជប៉ុន","កូរ៉េ","ផ្សេងៗ"];
 const POSITIONS = ["និយោជិត","និយោជិត","ប្រធានការិយាល័យ","អនុប្រធានការិយាល័យ","ប្រធាននាយកដ្ឋាន","អនុប្រធាននាយកដ្ឋាន","អគ្គនាយក","អនុអគ្គនាយក","រដ្ឋលេខាធិការ","អនុរដ្ឋលេខាធិការ","និយោជិត","ផ្សេងៗ"];
 const RELATIONSHIPS = ["ប្តី","ប្រពន្ធ","ឪពុក","ម្តាយ","បងប្រុស","បងស្រី","ប្អូនប្រុស","ប្អូនស្រី","កូនប្រុស","កូនស្រី","ផ្សេងៗ"];
-const EDU_LEVELS = ["បឋមសិក្សា","មធ្យមសិក្សាបឋមភូមិ","មធ្យមសិក្សាទុតិយភូមិ","បរិញ្ញាបត្រ","បរិញ្ញាបត្រជាន់ខ្ពស់","បណ្ឌិត","វគ្គបណ្តុះបណ្តាល","ផ្សេងៗ"];
-const DEGREES = ["សញ្ញាបត្រមធ្យមសិក្សាទុតិយភូមិ","បរិញ្ញាបត្រ","បរិញ្ញាបត្រជាន់ខ្ពស់","បណ្ឌិត","វិញ្ញាបនបត្រ","ផ្សេងៗ"];
+const EDU_LEVELS = ["បឋមសិក្សា","មធ្យមសិក្សាបឋមភូមិ","មធ្យមសិក្សាទុតិយភូមិ","បរិញ្ញាបត្ររង","បរិញ្ញាបត្រ","បរិញ្ញាបត្រជាន់ខ្ពស់","បណ្ឌិត","វគ្គបណ្តុះបណ្តាល","ផ្សេងៗ"];
+const DEGREES = ["សញ្ញាបត្រមធ្យមសិក្សាទុតិយភូមិ","បរិញ្ញាបត្ររង","បរិញ្ញាបត្រ","បរិញ្ញាបត្រជាន់ខ្ពស់","បណ្ឌិត","វិញ្ញាបនបត្រ","ផ្សេងៗ"];
 const MAJORS = ["គ្រប់គ្រង","នីតិសាស្រ្ត","សេដ្ឋកិច្ច","គណនេយ្យ","ព័ត៌មានវិទ្យា","វិស្វកម្ម","វេជ្ជសាស្រ្ត","កសិកម្ម","អប់រំ","ភាសា","ផ្សេងៗ"];
 const COUNTRIES = ["កម្ពុជា","ថៃ","វៀតណាម","ចិន","ជប៉ុន","កូរ៉េ","បារាំង","អាមេរិក","អូស្រ្តាលី","ផ្សេងៗ"];
 const RANKS = ["អនុក្រិត","ក្រិត","បរិញ្ញា","អនុបណ្ឌិត","បណ្ឌិត"];
@@ -470,7 +490,7 @@ const PANELS = [
   { id:"education", label:"ប្រវត្តិការសិក្សា", icon:"🎓" },
   { id:"language", label:"ភាសា", icon:"🌐" },
   { id:"warning", label:"លិខិតព្រមាន", icon:"⚠️" },
-  { id:"summary", label:"របាយការណ៍សង្ខេប", icon:"📊" },];
+  { id:"summary", label:"ព័ត៌មានសង្ខេបរបស់និយោជិត", icon:"📊" },];
 
 const EPROFILE_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxdQ97snHgjQm7ox_4ESbkPQASqbVDG2gKCbygPcjxMmw4OsiUfd4a0Swgu99sIr_ow/exec';
 
@@ -875,9 +895,55 @@ async function onDistChange(prefix) {
 // ─── Helpers ───
 function opts(arr) { return '<option value="">-- ជ្រើសរើស --</option>' + arr.map(a => `<option value="${a}">${a}</option>`).join(''); }
 function field(label, inner, cls='') { return `<div class="field ${cls}"><label>${label}</label>${inner}</div>`; }
-function input(id, type='text', ph='') { return `<input type="${type}" id="${id}" placeholder="${ph}">`; }
+function yearOptionTags_() {
+  var current = new Date().getFullYear();
+  var from = current + 5;
+  var to = 1950;
+  var html = '<option value="">ឆ្នាំ</option>';
+  for (var y = from; y >= to; y--) {
+    html += '<option value="' + y + '">' + y + '</option>';
+  }
+  return html;
+}
+function input(id, type='text', ph='') {
+  if (type === 'date') {
+    return `<div class="date-year-wrap"><input type="date" id="${id}" placeholder="${ph}" onchange="syncYearDropdownFromDate_('${id}')"><select id="${id}_year" class="date-year-select" onchange="applyYearDropdownToDate_('${id}')">${yearOptionTags_()}</select></div>`;
+  }
+  return `<input type="${type}" id="${id}" placeholder="${ph}">`;
+}
 function select(id, options) { return `<select id="${id}">${opts(options)}</select>`; }
 function textarea(id, rows=3) { return `<textarea id="${id}" rows="${rows}"></textarea>`; }
+function syncYearDropdownFromDate_(id) {
+  var dateEl = document.getElementById(id);
+  var yearEl = document.getElementById(id + '_year');
+  if (!dateEl || !yearEl) return;
+  var year = (dateEl.value && /^\d{4}/.test(dateEl.value)) ? dateEl.value.slice(0, 4) : '';
+  yearEl.value = year;
+}
+
+function applyYearDropdownToDate_(id) {
+  var dateEl = document.getElementById(id);
+  var yearEl = document.getElementById(id + '_year');
+  if (!dateEl || !yearEl) return;
+  var selectedYear = String(yearEl.value || '').trim();
+  if (!selectedYear) return;
+  var mm = '01';
+  var dd = '01';
+  if (dateEl.value) {
+    var parts = dateEl.value.split('-');
+    mm = parts[1] || mm;
+    dd = parts[2] || dd;
+  }
+  dateEl.value = selectedYear + '-' + mm + '-' + dd;
+  dateEl.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function syncAllDateYearControls_() {
+  var dateEls = document.querySelectorAll('.date-year-wrap input[type="date"][id]');
+  dateEls.forEach(function(el) {
+    syncYearDropdownFromDate_(el.id);
+  });
+}
 function radioGroup(name, options) {
   return `<div class="radio-group">${options.map(o => `<label><input type="radio" name="${name}" value="${o}"> ${o}</label>`).join('')}</div>`;
 }
@@ -970,7 +1036,8 @@ function buildInfo() {
       </div>
       <div class="profile-photo">
         <div class="photo-box" id="photoBox"><span class="placeholder">📷</span></div>
-        <label class="photo-btn">បញ្ចូលរូបថត<input type="file" accept="image/*" style="display:none" onchange="previewPhoto(this)"></label>
+        <input id="info_photo_url" type="hidden">
+        <label class="photo-btn">បញ្ចូលរូបថត<input type="file" accept=".jpg,.jpeg,image/jpeg" style="display:none" onchange="previewPhoto(this, 'info_photo_url')"></label>
       </div>
     </div>
     <div class="form-grid cols-2" style="margin-top:16px">
@@ -1167,7 +1234,7 @@ function buildWarning() {
 
 
 function sj(a, b, sep) {
-  sep = sep || ' / ';
+  sep = sep || ' - ';
   var va = a || '', vb = b || '';
   if (va && vb) return va + sep + vb;
   if (va) return va;
@@ -1177,36 +1244,182 @@ function sj(a, b, sep) {
 
 function buildSummary() {
   var d = getMergedData();
-  var nm=((d.info.lastNameKh||'')+' '+(d.info.firstNameKh||'')).trim()||'';
-  var ne=((d.info.lastNameEn||'')+' '+(d.info.firstNameEn||'')).trim()||'';
-  var bp=[d.info.birthPlace.village,d.info.birthPlace.commune,d.info.birthPlace.district,d.info.birthPlace.province].filter(Boolean).join(', ')||'';
-  var ca=[d.info.currentAddr.street,d.info.currentAddr.village,d.info.currentAddr.commune,d.info.currentAddr.district,d.info.currentAddr.province].filter(Boolean).join(', ')||'';
-  function r(l,v){var val=v||''; if(!val||val==='N/A'||val.trim()==='/'){return '';} return '<tr><td>'+l+'</td><td>'+val+'</td></tr>';}
-  function s(t){return '<tr class="sec-row"><td colspan="2">'+t+'</td></tr>';}
-  var warningItems = (d.warning && Array.isArray(d.warning.items)) ? d.warning.items : [];
-  var warningDetail = warningItems.map(function(w, i) {
-    return 'លើកទី ' + (i + 1) + ': ' + [w.date, w.level, w.detail, w.fileName ? ('ឯកសារ: ' + w.fileName) : ''].filter(Boolean).join(' | ');
-  }).join('<br>');
-  var hasAny = d.info.officerId || d.info.lastNameKh || d.info.firstNameKh || d.info.phone || d.work.ministry || d.education.degree || d.language.language || warningItems.length;
+  var nm = ((d.info.lastNameKh || '') + ' ' + (d.info.firstNameKh || '')).trim() || '';
+  var ne = ((d.info.lastNameEn || '') + ' ' + (d.info.firstNameEn || '')).trim() || '';
+  var bp = [d.info.birthPlace.village, d.info.birthPlace.commune, d.info.birthPlace.district, d.info.birthPlace.province].filter(Boolean).join(', ') || '';
+  var ca = [d.info.currentAddr.street, d.info.currentAddr.village, d.info.currentAddr.commune, d.info.currentAddr.district, d.info.currentAddr.province].filter(Boolean).join(', ') || '';
+  var hasAny = d.info.officerId || d.info.lastNameKh || d.info.firstNameKh || d.info.phone || d.work.ministry || d.education.degree || d.language.language;
+
   if (!hasAny) {
-    return '<div style="text-align:center;padding:40px 20px"><h2 style="font-size:18px;font-weight:900;color:var(--accent)">' +
-    '\u179A\u1794\u17B6\u1799\u1780\u17B6\u179A\u178E\u17CD\u179F\u1784\u17D2\u1781\u17C1\u1794' + '</h2>' +
-    '<div style="margin:20px auto;max-width:420px;padding:24px;border-radius:var(--radius-lg);background:var(--input-bg);border:1px solid var(--card-border);text-align:left">' +
-    '<p style="font-size:14px;color:var(--text);line-height:2;margin-bottom:12px">\u179F\u17BC\u1798\u1794\u17C6\u1796\u17C1\u1789\u1796\u17D0\u178F\u17CC\u1798\u17B6\u1793\u1793\u17C5\u1780\u17D2\u1793\u17BB\u1784\u1795\u17D2\u1791\u17B6\u17C6\u1784\u1791\u17B8 \u17E1 \u178A\u179B\u17CB \u17E8 \u179A\u17BD\u1785\u17A0\u17BE\u1799\u17D4</p>' +
-    '<p style="font-size:13px;color:var(--accent);font-weight:700">\u2190 \u1785\u17BC\u179B\u1791\u17C5\u1795\u17D2\u1791\u17B6\u17C6\u1784\u1791\u17B8\u17E1 \u178A\u17BE\u1798\u17D2\u1794\u17B8\u1785\u17B6\u1794\u17CB\u1795\u17D2\u178F\u17BE\u1798</p>' +
-    '</div></div>' + footerBar() + empRecord('summary');
+    return '<div style="text-align:center;padding:40px 20px"><h2 style="font-size:18px;font-weight:900;color:var(--accent)">ព័ត៌មានសង្ខេបរបស់និយោជិត</h2>' +
+      '<div style="margin:20px auto;max-width:460px;padding:24px;border-radius:var(--radius-lg);background:var(--input-bg);border:1px solid var(--card-border);text-align:left">' +
+      '<p style="font-size:14px;color:var(--text);line-height:2;margin-bottom:12px">សូមបំពេញព័ត៌មាននៅក្នុងផ្ទាំងទី ១ ដល់ ៧ ជាមុនសិន។</p>' +
+      '<p style="font-size:13px;color:var(--accent);font-weight:700">← ចូលទៅផ្ទាំងទី ១ ដើម្បីចាប់ផ្តើម</p>' +
+      '</div></div>' + footerBar() + empRecord('summary');
   }
-  return '<div style="text-align:center;margin-bottom:20px"><h2 style="font-size:18px;font-weight:900;color:var(--accent)">របាយការណ៍សង្ខេបព័ត៌មាននិយោជិត</h2><p style="font-size:12px;color:var(--text-muted)">ទិដ្ឋភាពរួម — ផ្ទាំងទី ១ ដល់ ៨</p></div>'+
-    '<table class="stbl"><thead><tr><th style="width:30%">វាល</th><th>តម្លៃ</th></tr></thead><tbody>'+
-    s('១. ព័ត៌មាននិយោជិត')+r('ឈ្មោះ (ខ្មែរ)','<strong>'+nm+'</strong>')+r('ឈ្មោះ (ឡាតាំង)',ne)+r('អត្ថលេខ / លេខអត្តសញ្ញាណប័ណ្ណ',sj(d.info.officerId, d.info.idCard))+r('ភេទ / ថ្ងៃខែឆ្នាំកំណើត',sj(d.info.gender, d.info.dob))+r('ជនជាតិ / សញ្ជាតិ',sj(d.info.ethnicity, d.info.nationality))+r('ស្ថានភាពគ្រួសារ',d.info.maritalStatus)+r('ទីកន្លែងកំណើត',bp)+r('អាស័យឌ្ឋានបច្ចុប្បន្ន',ca)+r('ថ្ងៃចូលការងារ / ថ្ងៃតាំងស៊ុប់',sj(d.info.joinDate, d.info.confirmDate))+r('ស្ថានភាព / កាយសម្បទា',sj(d.info.lifeStatus, d.info.disability))+r('ចំនួនបងប្អូន',(d.info.brothers||'0')+' ប្រុស, '+(d.info.sisters||'0')+' ស្រី')+r('ទូរស័ព្ទ / អ៊ីមែល',sj(d.info.phone, d.info.email))+
-    s('២. ព័ត៌មានគ្រួសារ')+r('ទំនាក់ទំនង',d.family.relation)+r('ឈ្មោះ',((d.family.lastNameKh||'')+' '+(d.family.firstNameKh||'')).trim())+r('ភេទ / ថ្ងៃខែឆ្នាំកំណើត',sj(d.family.gender, d.family.dob))+r('មុខរបរ',d.family.occupation)+
-    s('៣. ប្រវត្តិការងារ')+r('ក្រសួង',d.work.ministry)+r('មុខតំណែង / ឋានៈស្មើ',sj(d.work.position, d.work.equivalent))+r('ស្ថានភាព',d.work.status)+r('កាលបរិឆ្ឆេទ',(d.work.startDate||'?')+' ~ '+(d.work.endDate||'បច្ចុប្បន្ន'))+
-    s('៤. ក្របខណ្ឌ')+r('ប្រភេទ',d.framework.type)+r('ប្រភេទ / ឋានន្តរសក្តិ / ថ្នាក់',sj(d.framework.category, d.framework.rank)+' / '+(d.framework.grade||''))+r('ឡើងសន្ទស្សន៍តាម',d.framework.indexUp)+
-    s('៥. មុខងារបន្ថែម')+r('មុខតំណែង / ឋានៈស្មើ',sj(d.additional.position, d.additional.equivalent))+r('ក្រសួង',d.additional.ministry)+r('ស្ថានភាព',d.additional.status)+
-    s('៦. ប្រវត្តិការសិក្សា')+r('ថ្នាក់សិក្សា / វគ្គ',sj(d.education.level, d.education.course))+r('សញ្ញាបត្រ / ជំនាញ',sj(d.education.degree, d.education.major))+r('គ្រឹះស្ថានសិក្សា',d.education.institution)+r('ខេត្ត/ក្រុង / ប្រទេស',sj(d.education.city, d.education.country))+
-    s('៧. ភាសា')+r('ភាសា',d.language.language)+r('អាន / សរសេរ',(d.language.reading||'-')+' / '+(d.language.writing||'-'))+r('ស្តាប់ / និយាយ',(d.language.listening||'-')+' / '+(d.language.speaking||'-'))+
-    s('៨. លិខិតព្រមាន')+r('ចំនួនលិខិតព្រមាន', String(warningItems.length))+r('លម្អិតលិខិតព្រមាន', warningDetail)+r('កំណត់សម្គាល់', d.warning ? d.warning.note : '')+
-    '</tbody></table>'+footerBar()+empRecord('summary');
+
+  function sv(v) { return v ? String(v) : '—'; }
+  function section(title, items, cols) {
+    return '<div class="section-label" style="margin-top:18px">' + title + '</div>' +
+      '<div class="form-grid cols-' + (cols || 2) + '" style="margin-top:12px">' +
+      items.map(function(it) { return field(it[0], '<div class="summary-view">' + sv(it[1]) + '</div>'); }).join('') +
+      '</div>';
+  }
+
+  var photo = d.info.photoUrl
+    ? '<img src="' + String(d.info.photoUrl).replace(/"/g, '&quot;') + '" alt="photo">'
+    : '<span class="placeholder">📷</span>';
+
+  var html = '<div style="text-align:center;margin-bottom:18px"><h2 style="font-size:19px;font-weight:900;color:var(--accent)">ព័ត៌មានសង្ខេបរបស់និយោជិត</h2>' +
+    '<p style="font-size:12px;color:var(--text-muted)">ទម្រង់សង្ខេបតាមផ្ទាំងទី ១ ដល់ ៧</p></div>' +
+    '<div class="profile-top" style="margin-bottom:14px">' +
+      '<div class="profile-fields">' +
+        '<div class="form-grid cols-2">' +
+          field('ឈ្មោះ (ខ្មែរ)', '<div class="summary-view"><strong>' + sv(nm) + '</strong></div>') +
+          field('ឈ្មោះ (ឡាតាំង)', '<div class="summary-view">' + sv(ne) + '</div>') +
+        '</div>' +
+        '<div class="form-grid cols-2">' +
+          field('អត្ថលេខនិយោជិត', '<div class="summary-view">' + sv(d.info.officerId) + '</div>') +
+          field('លេខអត្តសញ្ញាណប័ណ្ណ', '<div class="summary-view">' + sv(d.info.idCard) + '</div>') +
+        '</div>' +
+      '</div>' +
+      '<div class="profile-photo"><div class="photo-box">' + photo + '</div></div>' +
+    '</div>';
+
+  html += section('១. ព័ត៌មាននិយោជិត', [
+    ['ភេទ', d.info.gender],
+    ['ថ្ងៃខែឆ្នាំកំណើត', d.info.dob],
+    ['ជនជាតិ', d.info.ethnicity],
+    ['សញ្ជាតិ', d.info.nationality],
+    ['ស្ថានភាពគ្រួសារ', d.info.maritalStatus],
+    ['ទីកន្លែងកំណើត', bp],
+    ['អាសយដ្ឋានបច្ចុប្បន្ន', ca],
+    ['ថ្ងៃចូលការងារ', d.info.joinDate],
+    ['ថ្ងៃតាំងស៊ុប់', d.info.confirmDate],
+    ['ស្ថានភាព', d.info.lifeStatus],
+    ['កាយសម្បទា', d.info.disability],
+    ['ទូរស័ព្ទ', d.info.phone],
+    ['អ៊ីមែល', d.info.email]
+  ], 2);
+
+  var familyRows = [
+    ['ទំនាក់ទំនង', d.family.relation],
+    ['លេខអត្តសញ្ញាណប័ណ្ណ', d.family.idCard],
+    ['នាមត្រកូល (ខ្មែរ)', d.family.lastNameKh],
+    ['នាមខ្លួន (ខ្មែរ)', d.family.firstNameKh],
+    ['នាមត្រកូល (ឡាតាំង)', d.family.lastNameEn],
+    ['នាមខ្លួន (ឡាតាំង)', d.family.firstNameEn],
+    ['ភេទ', d.family.gender],
+    ['ថ្ងៃខែឆ្នាំកំណើត', d.family.dob],
+    ['ជនជាតិ', d.family.ethnicity],
+    ['សញ្ជាតិ', d.family.nationality],
+    ['ស្ថានភាពគ្រួសារ', d.family.maritalStatus],
+    ['ស្ថានភាពរស់នៅ', d.family.lifeStatus],
+    ['អាសយដ្ឋាន', [d.family.address.street, d.family.address.village, d.family.address.commune, d.family.address.district, d.family.address.province].filter(Boolean).join(', ')],
+    ['មុខរបរ', d.family.occupation]
+  ];
+  (Array.isArray(d.family.entries) ? d.family.entries : []).forEach(function(f, idx) {
+    var n = idx + 2;
+    familyRows.push(['ព័ត៌មានគ្រួសារ #' + n + ' - ទំនាក់ទំនង', f.relation]);
+    familyRows.push(['ព័ត៌មានគ្រួសារ #' + n + ' - លេខអត្តសញ្ញាណប័ណ្ណ', f.idCard]);
+    familyRows.push(['ព័ត៌មានគ្រួសារ #' + n + ' - នាមត្រកូល (ខ្មែរ)', f.lastNameKh]);
+    familyRows.push(['ព័ត៌មានគ្រួសារ #' + n + ' - នាមខ្លួន (ខ្មែរ)', f.firstNameKh]);
+    familyRows.push(['ព័ត៌មានគ្រួសារ #' + n + ' - នាមត្រកូល (ឡាតាំង)', f.lastNameEn]);
+    familyRows.push(['ព័ត៌មានគ្រួសារ #' + n + ' - នាមខ្លួន (ឡាតាំង)', f.firstNameEn]);
+    familyRows.push(['ព័ត៌មានគ្រួសារ #' + n + ' - ភេទ', f.gender]);
+    familyRows.push(['ព័ត៌មានគ្រួសារ #' + n + ' - ថ្ងៃខែឆ្នាំកំណើត', f.dob]);
+    familyRows.push(['ព័ត៌មានគ្រួសារ #' + n + ' - មុខរបរ', f.occupation]);
+    familyRows.push(['ព័ត៌មានគ្រួសារ #' + n + ' - ទូរស័ព្ទ', f.phone]);
+  });
+  html += section('២. ព័ត៌មានគ្រួសារ', familyRows, 2);
+
+  var workRows = [
+    ['ថ្ងៃចាប់ផ្តើម', d.work.startDate],
+    ['ថ្ងៃបញ្ចប់', d.work.endDate],
+    ['ក្រសួង', d.work.ministry],
+    ['មុខតំណែង', d.work.position],
+    ['ឋានៈស្មើ', d.work.equivalent],
+    ['ស្ថានភាព', d.work.status],
+    ['សម្គាល់', d.work.note]
+  ];
+  (Array.isArray(d.work.entries) ? d.work.entries : []).forEach(function(w, idx) {
+    var n = idx + 2;
+    workRows.push(['ប្រវត្តិការងារ #' + n + ' - ថ្ងៃចាប់ផ្តើម', w.startDate]);
+    workRows.push(['ប្រវត្តិការងារ #' + n + ' - ថ្ងៃបញ្ចប់', w.endDate]);
+    workRows.push(['ប្រវត្តិការងារ #' + n + ' - ក្រសួង', w.ministry]);
+    workRows.push(['ប្រវត្តិការងារ #' + n + ' - មុខតំណែង', w.position]);
+    workRows.push(['ប្រវត្តិការងារ #' + n + ' - ឋានៈស្មើ', w.equivalent]);
+    workRows.push(['ប្រវត្តិការងារ #' + n + ' - ស្ថានភាព', w.status]);
+    workRows.push(['ប្រវត្តិការងារ #' + n + ' - សម្គាល់', w.note]);
+  });
+  html += section('៣. ប្រវត្តិការងារ', workRows, 2);
+
+  html += section('៤. ក្របខណ្ឌ', [
+    ['ថ្ងៃចាប់ផ្តើម', d.framework.startDate],
+    ['ថ្ងៃបញ្ចប់', d.framework.endDate],
+    ['ប្រភេទ', d.framework.type],
+    ['ប្រភេទរង', d.framework.category],
+    ['ឋានន្តរសក្ដិ', d.framework.rank],
+    ['ថ្នាក់', d.framework.grade],
+    ['ឡើងសន្ទស្សន៍តាម', d.framework.indexUp],
+    ['សម្គាល់', d.framework.note]
+  ], 2);
+
+  html += section('៥. មុខងារបន្ថែម', [
+    ['ថ្ងៃចាប់ផ្តើម', d.additional.startDate],
+    ['ថ្ងៃបញ្ចប់', d.additional.endDate],
+    ['មុខតំណែង', d.additional.position],
+    ['ឋានៈស្មើ', d.additional.equivalent],
+    ['ក្រសួង', d.additional.ministry],
+    ['ថ្នាក់', d.additional.level === 'central' ? 'ថ្នាក់កណ្តាល' : (d.additional.level === 'sub' ? 'ថ្នាក់ក្រោមជាតិ' : '')],
+    ['អង្គភាពថ្នាក់ក្រោម', [d.additional.sub1, d.additional.sub2, d.additional.sub3, d.additional.sub4, d.additional.sub5].filter(Boolean).join(' - ')],
+    ['ស្ថានភាព', d.additional.status],
+    ['សម្គាល់', d.additional.note]
+  ], 2);
+
+  var eduRows = [
+    ['ថ្ងៃចាប់ផ្តើម', d.education.startDate],
+    ['ថ្ងៃបញ្ចប់', d.education.endDate],
+    ['ថ្នាក់សិក្សា', d.education.level],
+    ['វគ្គសិក្សា', d.education.course],
+    ['សញ្ញាបត្រ', d.education.degree],
+    ['ជំនាញ', d.education.major],
+    ['គ្រឹះស្ថានសិក្សា', d.education.institution],
+    ['ទីក្រុង/ខេត្ត', d.education.city],
+    ['ប្រទេស', d.education.country],
+    ['សម្គាល់', d.education.note]
+  ];
+  (Array.isArray(d.education.entries) ? d.education.entries : []).forEach(function(e, idx) {
+    var n = idx + 2;
+    eduRows.push(['ប្រវត្តិការសិក្សា #' + n + ' - ថ្ងៃចាប់ផ្តើម', e.startDate]);
+    eduRows.push(['ប្រវត្តិការសិក្សា #' + n + ' - ថ្ងៃបញ្ចប់', e.endDate]);
+    eduRows.push(['ប្រវត្តិការសិក្សា #' + n + ' - ថ្នាក់សិក្សា', e.level]);
+    eduRows.push(['ប្រវត្តិការសិក្សា #' + n + ' - សញ្ញាបត្រ', e.degree]);
+    eduRows.push(['ប្រវត្តិការសិក្សា #' + n + ' - ជំនាញ', e.major]);
+    eduRows.push(['ប្រវត្តិការសិក្សា #' + n + ' - គ្រឹះស្ថានសិក្សា', e.institution]);
+    eduRows.push(['ប្រវត្តិការសិក្សា #' + n + ' - ប្រទេស', e.country]);
+    eduRows.push(['ប្រវត្តិការសិក្សា #' + n + ' - សម្គាល់', e.note]);
+  });
+  html += section('៦. ប្រវត្តិការសិក្សា', eduRows, 2);
+
+  var langRows = [
+    ['ភាសា', d.language.language],
+    ['អាន', d.language.reading],
+    ['សរសេរ', d.language.writing],
+    ['ស្តាប់', d.language.listening],
+    ['និយាយ', d.language.speaking]
+  ];
+  (Array.isArray(d.language.entries) ? d.language.entries : []).forEach(function(l, idx) {
+    var n = idx + 2;
+    langRows.push(['ភាសា #' + n + ' - ឈ្មោះភាសា', l.language]);
+    langRows.push(['ភាសា #' + n + ' - អាន', l.reading]);
+    langRows.push(['ភាសា #' + n + ' - សរសេរ', l.writing]);
+    langRows.push(['ភាសា #' + n + ' - ស្តាប់', l.listening]);
+    langRows.push(['ភាសា #' + n + ' - និយាយ', l.speaking]);
+  });
+  html += section('៧. ភាសា', langRows, 2);
+
+  return html + footerBar() + empRecord('summary');
 }
 
 const panelBuilders = [buildInfo, buildFamily, buildWork, buildFramework, buildAdditional, buildEducation, buildLanguage, buildWarning, buildSummary];
@@ -1408,13 +1621,38 @@ function restorePanelData() {
         if (r.value === saved[key]) r.checked = true;
       });
     });
+    if (pid === 'info') renderPhotoPreview_(saved.info_photo_url || '');
     await restoreAddressCascade_('info_bp', saved);
     await restoreAddressCascade_('info_ca', saved);
     await restoreAddressCascade_('fam_ca', saved);
+    syncAllDateYearControls_();
     if (pid === 'warning') updateWarningCount_();
 
     if (typeof updateEmpSummary === 'function') setTimeout(updateEmpSummary, 200);
   }, 100);
+}
+
+function collectIndexedEntries_(panelObj, prefix, fieldMap) {
+  var src = panelObj || {};
+  var map = fieldMap || {};
+  var idxMap = {};
+  Object.keys(src).forEach(function(key) {
+    var m = new RegExp('^' + prefix + '(\\d+)_([a-zA-Z0-9]+)$').exec(String(key || ''));
+    if (!m) return;
+    var idx = m[1];
+    var token = m[2];
+    if (!map[token]) return;
+    if (!idxMap[idx]) idxMap[idx] = {};
+    idxMap[idx][map[token]] = src[key] || '';
+  });
+  return Object.keys(idxMap)
+    .sort(function(a, b) { return Number(a) - Number(b); })
+    .map(function(k) { return idxMap[k]; })
+    .filter(function(entry) {
+      return Object.keys(entry || {}).some(function(fieldKey) {
+        return String(entry[fieldKey] || '').trim();
+      });
+    });
 }
 
 // Build merged data from all panels for summary/export
@@ -1447,7 +1685,8 @@ function getMergedData() {
       joinDate: p.info_jd||'', confirmDate: p.info_cd||'',
       lifeStatus: p.info_life||'', disability: p.info_disab||'',
       brothers: p.info_bro||'', sisters: p.info_sis||'',
-      phone: p.info_phone||'', email: p.info_email||''
+      phone: p.info_phone||'', email: p.info_email||'',
+      photoUrl: p.info_photo_url || ''
     };
   }
   if (pd.family) {
@@ -1460,7 +1699,12 @@ function getMergedData() {
       ethnicity: p.fam_eth||'', nationality: p.fam_nat||'',
       maritalStatus: p.fam_marital||'', lifeStatus: p.fam_life||'',
       address: { province: p.fam_ca_prov||'', district: p.fam_ca_dist||'', commune: p.fam_ca_comm||'', village: p.fam_ca_vill||'', street: p.fam_ca_street||'' },
-      occupation: p.fam_occ||''
+      occupation: p.fam_occ||'',
+      entries: collectIndexedEntries_(p, 'fam', {
+        rel: 'relation', idc: 'idCard', lnkh: 'lastNameKh', fnkh: 'firstNameKh',
+        lnen: 'lastNameEn', fnen: 'firstNameEn', gender: 'gender', dob: 'dob',
+        occ: 'occupation', ph: 'phone'
+      })
     };
   }
   if (pd.work) {
@@ -1471,7 +1715,11 @@ function getMergedData() {
       sub1: p.work_sub1||'', sub2: p.work_sub2||'', sub3: p.work_sub3||'',
       sub4: p.work_sub4||'', sub5: p.work_sub5||'',
       position: p.work_pos||'', equivalent: p.work_eq||'',
-      status: p.work_stat||'', note: p.work_note||''
+      status: p.work_stat||'', note: p.work_note||'',
+      entries: collectIndexedEntries_(p, 'w', {
+        start: 'startDate', end: 'endDate', min: 'ministry', pos: 'position',
+        eq: 'equivalent', stat: 'status', note: 'note'
+      })
     };
   }
   if (pd.framework) {
@@ -1489,6 +1737,7 @@ function getMergedData() {
       startDate: p.add_start||p.add_startyear||'', endDate: p.add_end||p.add_endyear||'',
       position: p.add_pos||'', equivalent: p.add_eq||'',
       ministry: p.add_min||'', level: p.add_level||'',
+      sub1: p.add_sub1||'', sub2: p.add_sub2||'', sub3: p.add_sub3||'', sub4: p.add_sub4||'', sub5: p.add_sub5||'',
       status: p.add_stat||'', note: p.add_note||''
     };
   }
@@ -1499,7 +1748,11 @@ function getMergedData() {
       level: p.edu_lev||'', course: p.edu_course||'',
       degree: p.edu_deg||'', major: p.edu_maj||'',
       institution: p.edu_inst||'', city: p.edu_city||'',
-      country: p.edu_country||'', note: p.edu_note||''
+      country: p.edu_country||'', note: p.edu_note||'',
+      entries: collectIndexedEntries_(p, 'e', {
+        start: 'startDate', end: 'endDate', lev: 'level', deg: 'degree',
+        maj: 'major', inst: 'institution', country: 'country', note: 'note'
+      })
     };
   }
   if (pd.language) {
@@ -1507,7 +1760,10 @@ function getMergedData() {
     d.language = {
       language: p.lang_sel||'',
       reading: p.lang_read||'', writing: p.lang_write||'',
-      listening: p.lang_listen||'', speaking: p.lang_speak||''
+      listening: p.lang_listen||'', speaking: p.lang_speak||'',
+      entries: collectIndexedEntries_(p, 'lng', {
+        sel: 'language', read: 'reading', write: 'writing', listen: 'listening', speak: 'speaking'
+      })
     };
   }
   if (pd.warning) {
@@ -1542,8 +1798,8 @@ function getMergedData() {
 }
 
 
-function goTo(idx) {
-  savePanelData();
+function goTo(idx, opts) {
+  if (!(opts && opts.skipSave)) savePanelData();
   currentPanel = idx;
   renderPanel();
   closeSidebar();
@@ -1557,15 +1813,32 @@ function goPanel(dir) {
 }
 
 // ─── Photo Preview ───
-function previewPhoto(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const box = document.getElementById('photoBox');
-      box.innerHTML = `<img src="${e.target.result}" alt="photo">`;
-    };
-    reader.readAsDataURL(input.files[0]);
+function renderPhotoPreview_(src) {
+  var box = document.getElementById('photoBox');
+  if (!box) return;
+  var value = String(src || '').trim();
+  if (!value) {
+    box.innerHTML = '<span class="placeholder">📷</span>';
+    return;
   }
+  box.innerHTML = '<img src="' + value.replace(/"/g, '&quot;') + '" alt="photo">';
+}
+
+function previewPhoto(input, targetId) {
+  if (!input || !input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var dataUrl = String((e && e.target && e.target.result) || '').trim();
+    renderPhotoPreview_(dataUrl);
+    var target = document.getElementById(targetId || 'info_photo_url');
+    if (target) target.value = dataUrl;
+    setFieldValueInPanelData_('info_photo_url', dataUrl);
+    savePanelDraft_();
+  };
+  reader.onerror = function() {
+    showToast('Cannot read selected photo file.', 'error');
+  };
+  reader.readAsDataURL(input.files[0]);
 }
 
 // ─── Toast ───
@@ -1664,10 +1937,44 @@ function radio(name) { var el = document.querySelector('input[name="'+name+'"]:c
 function setColWidths(ws, widths) { ws['!cols'] = widths.map(function(w){ return {wch:w}; }); }
 function getTimestamp() { var d=new Date(); return d.getFullYear()+''+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'_'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0'); }
 
+var EXCEL_CELL_MAX_LEN = 32767;
+function excelSafeText_(value) {
+  if (value === null || value === undefined) return '';
+  var s = String(value);
+  if (/^data:image\/[a-zA-Z0-9.+-]+;base64,/i.test(s)) {
+    return '[image data omitted for Excel export]';
+  }
+  if (s.length > EXCEL_CELL_MAX_LEN) {
+    return s.slice(0, EXCEL_CELL_MAX_LEN - 14) + '...[trimmed]';
+  }
+  return s;
+}
+
+function excelSafeObject_(obj) {
+  try {
+    return JSON.parse(JSON.stringify(obj || {}, function(_k, v) {
+      return (typeof v === 'string') ? excelSafeText_(v) : v;
+    }));
+  } catch (e) {
+    return {};
+  }
+}
+
+function excelSafeAoa_(rows) {
+  return (rows || []).map(function(row) {
+    return (row || []).map(function(cell) { return excelSafeText_(cell); });
+  });
+}
+
+function hasStoredRecordsForExport_() {
+  loadRecords();
+  return !!(records && records.length);
+}
+
 function addKVSheet(wb, sheetName, title, kvPairs) {
-  var data = [[title],[""],["Field","Value"]];
+  var data = [[title],[""]];
   kvPairs.forEach(function(r){ data.push(r); });
-  var ws = XLSX.utils.aoa_to_sheet(data);
+  var ws = XLSX.utils.aoa_to_sheet(excelSafeAoa_(data));
   setColWidths(ws, [44, 44]);
   XLSX.utils.book_append_sheet(wb, ws, sheetName.substring(0,31));
 }
@@ -1753,100 +2060,212 @@ function exportExcelData() {
 }
 
 // ─── 2. Export Report ───
+function makeSheetName_(base, fallback) {
+  var name = String(base || '').trim() || String(fallback || 'Report');
+  name = name.replace(/[\\\/?*\[\]:]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!name) name = String(fallback || 'Report');
+  return name.slice(0, 31);
+}
+
+function makeUniqueSheetName_(base, used) {
+  var cleanBase = makeSheetName_(base, 'Report');
+  var name = cleanBase;
+  var i = 2;
+  while (used[name]) {
+    var suffix = ' (' + i + ')';
+    name = cleanBase.slice(0, Math.max(1, 31 - suffix.length)) + suffix;
+    i++;
+  }
+  used[name] = true;
+  return name;
+}
+
+function buildSummaryReportRows_(d, titlePrefix) {
+  d = d || {};
+  d.info = d.info || {};
+  d.family = d.family || {};
+  d.work = d.work || {};
+  d.framework = d.framework || {};
+  d.additional = d.additional || {};
+  d.education = d.education || {};
+  d.language = d.language || {};
+  d.warning = d.warning || {};
+  d.info.birthPlace = d.info.birthPlace || {};
+  d.info.currentAddr = d.info.currentAddr || {};
+
+  var nm = ((d.info.lastNameKh || '') + ' ' + (d.info.firstNameKh || '')).trim() || '—';
+  var ne = ((d.info.lastNameEn || '') + ' ' + (d.info.firstNameEn || '')).trim() || '';
+  var bp = [d.info.birthPlace.village, d.info.birthPlace.commune, d.info.birthPlace.district, d.info.birthPlace.province].filter(Boolean).join(', ');
+  var ca = [d.info.currentAddr.street, d.info.currentAddr.village, d.info.currentAddr.commune, d.info.currentAddr.district, d.info.currentAddr.province].filter(Boolean).join(', ');
+  var warningItems = Array.isArray(d.warning.items) ? d.warning.items : [];
+  var rows = [
+    ['ព័ត៌មានសង្ខេបរបស់និយោជិត', '', ''],
+    ['កាលបរិច្ឆេទ: ' + new Date().toLocaleDateString('km-KH'), '', ''],
+    ['មន្ត្រី: ' + nm + (ne ? (' (' + ne + ')') : '') + (titlePrefix ? (' | ' + titlePrefix) : ''), '', ''],
+    ['អត្តលេខ: ' + (d.info.officerId || ''), '', ''],
+    ['', '', '']
+  ];
+
+  function add(sec, items) {
+    items.forEach(function(r, i) { rows.push([i === 0 ? sec : '', r[0], r[1] || '']); });
+    rows.push(['', '', '']);
+  }
+
+  function secTitle_(label, idx) {
+    return label + ' #' + idx;
+  }
+
+  add(secTitle_('ព័ត៌មាននិយោជិត', 1), [
+    ['ឈ្មោះ (ខ្មែរ)', nm],
+    ['ឈ្មោះ (ឡាតាំង)', ne],
+    ['ភេទ', d.info.gender],
+    ['ថ្ងៃខែឆ្នាំកំណើត', d.info.dob],
+    ['ជនជាតិ', d.info.ethnicity],
+    ['សញ្ជាតិ', d.info.nationality],
+    ['ស្ថានភាពគ្រួសារ', d.info.maritalStatus],
+    ['ទីកន្លែងកំណើត', bp],
+    ['អាសយដ្ឋានបច្ចុប្បន្ន', ca],
+    ['ថ្ងៃចូលការងារ', d.info.joinDate],
+    ['ថ្ងៃតាំងស៊ុប', d.info.confirmDate],
+    ['ស្ថានភាព', d.info.lifeStatus],
+    ['កាយសម្បទា', d.info.disability],
+    ['ទូរស័ព្ទ', d.info.phone],
+    ['អ៊ីមែល', d.info.email],
+    ['បងប្អូន (ប្រុស/ស្រី)', sj(d.info.brothers, d.info.sisters)],
+    ['URL រូបថត', d.info.photoUrl || '']
+  ]);
+
+  add(secTitle_('ព័ត៌មានគ្រួសារ', 2), [
+    ['ទំនាក់ទំនង', d.family.relation],
+    ['ឈ្មោះ', ((d.family.lastNameKh || '') + ' ' + (d.family.firstNameKh || '')).trim()],
+    ['ភេទ / ថ្ងៃខែឆ្នាំកំណើត', sj(d.family.gender, d.family.dob)],
+    ['មុខរបរ', d.family.occupation]
+  ]);
+
+  var workSectionItems = [
+    ['កាលបរិច្ឆេទ', sj(d.work.startDate, d.work.endDate, ' ~ ')],
+    ['ក្រសួង', d.work.ministry],
+    ['មុខតំណែង / ឋានៈស្មើ', sj(d.work.position, d.work.equivalent)],
+    ['ស្ថានភាព', d.work.status]
+  ];
+  (Array.isArray(d.work.entries) ? d.work.entries : []).forEach(function(w, idx) {
+    workSectionItems.push([
+      'ប្រវត្តិការងារ #' + (idx + 2),
+      [sj(w.startDate, w.endDate, ' ~ '), w.ministry, sj(w.position, w.equivalent), w.status, w.note]
+        .filter(function(v) { return String(v || '').trim(); })
+        .join(' | ')
+    ]);
+  });
+  add(secTitle_('ប្រវត្តិការងារ', 3), workSectionItems);
+
+  add(secTitle_('ក្របខណ្ឌ', 4), [
+    ['កាលបរិច្ឆេទ', sj(d.framework.startDate, d.framework.endDate, ' ~ ')],
+    ['ប្រភេទ', d.framework.type],
+    ['ប្រភេទ / ឋានន្តរសក្ដិ / ថ្នាក់', sj(d.framework.category, d.framework.rank) + (d.framework.grade ? (' / ' + d.framework.grade) : '')],
+    ['ឡើងសន្ទស្សន៍តាម', d.framework.indexUp]
+  ]);
+
+  add(secTitle_('មុខងារបន្ថែម', 5), [
+    ['កាលបរិច្ឆេទ', sj(d.additional.startDate, d.additional.endDate, ' ~ ')],
+    ['មុខតំណែង / ឋានៈស្មើ', sj(d.additional.position, d.additional.equivalent)],
+    ['ក្រសួង', d.additional.ministry],
+    ['ថ្នាក់', d.additional.level === 'central' ? 'ថ្នាក់កណ្តាល' : (d.additional.level === 'sub' ? 'ថ្នាក់ក្រោមជាតិ' : '')],
+    ['អង្គភាពថ្នាក់ក្រោម', [d.additional.sub1, d.additional.sub2, d.additional.sub3, d.additional.sub4, d.additional.sub5].filter(Boolean).join(' / ')],
+    ['ស្ថានភាព', d.additional.status],
+    ['សម្គាល់', d.additional.note]
+  ]);
+
+  var eduSectionItems = [
+    ['កាលបរិច្ឆេទ', sj(d.education.startDate, d.education.endDate, ' ~ ')],
+    ['ថ្នាក់សិក្សា / វគ្គ', sj(d.education.level, d.education.course)],
+    ['សញ្ញាបត្រ / ជំនាញ', sj(d.education.degree, d.education.major)],
+    ['គ្រឹះស្ថានសិក្សា', d.education.institution],
+    ['ខេត្ត/ក្រុង / ប្រទេស', sj(d.education.city, d.education.country)]
+  ];
+  (Array.isArray(d.education.entries) ? d.education.entries : []).forEach(function(e, idx) {
+    eduSectionItems.push([
+      'ប្រវត្តិការសិក្សា #' + (idx + 2),
+      [sj(e.startDate, e.endDate, ' ~ '), sj(e.level, e.degree), e.major, e.institution, e.country, e.note]
+        .filter(function(v) { return String(v || '').trim(); })
+        .join(' | ')
+    ]);
+  });
+  add(secTitle_('ប្រវត្តិការសិក្សា', 6), eduSectionItems);
+
+  add(secTitle_('ភាសា', 7), [
+    ['ភាសា', d.language.language],
+    ['អាន / សរសេរ', sj(d.language.reading, d.language.writing)],
+    ['ស្តាប់ / និយាយ', sj(d.language.listening, d.language.speaking)]
+  ]);
+
+  var warningRows = [
+    ['ចំនួនលិខិតព្រមាន', String(warningItems.length)],
+    ['កំណត់សម្គាល់', d.warning.note || '']
+  ];
+  warningItems.forEach(function(w, i) {
+    warningRows.push(['លិខិតព្រមាន #' + (i + 1), [w.date, w.level, w.detail, w.fileName ? ('ឯកសារ: ' + w.fileName) : ''].filter(Boolean).join(' | ')]);
+  });
+  add(secTitle_('លិខិតព្រមាន', 8), warningRows);
+
+  return rows.map(function(row) {
+    return (row || []).map(function(cell) { return excelSafeText_(cell); });
+  });
+}
+
+function exportAllEmployeesReport_() {
+  loadRecords();
+  if (!records || !records.length) {
+    showToast('No saved records to export.', 'error');
+    return;
+  }
+
+  var wb = XLSX.utils.book_new();
+  var usedSheetNames = {};
+  var indexRows = [['ល.រ', 'អត្តលេខ', 'ឈ្មោះខ្មែរ', 'Sheet', 'កែប្រែចុងក្រោយ']];
+
+  records.forEach(function(rec, idx) {
+    var d = (rec && rec.data) ? rec.data : {};
+    var info = d.info || {};
+    var id = String(info.officerId || rec.id || ('REC-' + (idx + 1)));
+    var nameKh = ((info.lastNameKh || '') + ' ' + (info.firstNameKh || '')).trim() || '—';
+    var baseName = (idx + 1) + '-' + (id || nameKh);
+    var sheetName = makeUniqueSheetName_(baseName, usedSheetNames);
+    var rows = buildSummaryReportRows_(d, 'កំណត់ត្រាទី ' + (idx + 1));
+    var ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{wch:24},{wch:30},{wch:58}];
+    ws['!merges'] = [{s:{r:0,c:0},e:{r:0,c:2}},{s:{r:1,c:0},e:{r:1,c:2}},{s:{r:2,c:0},e:{r:2,c:2}},{s:{r:3,c:0},e:{r:3,c:2}}];
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    indexRows.push([String(idx + 1), excelSafeText_(id), excelSafeText_(nameKh), sheetName, excelSafeText_(rec.updated || '')]);
+  });
+
+  var wsIndex = XLSX.utils.aoa_to_sheet(excelSafeAoa_(indexRows));
+  setColWidths(wsIndex, [8, 16, 26, 20, 24]);
+  XLSX.utils.book_append_sheet(wb, wsIndex, '_INDEX');
+
+  XLSX.writeFile(wb, 'eProfile_Report_All_' + getTimestamp() + '.xlsx');
+  showToast('នាំចេញរបាយការណ៍ទាំងអស់ដោយជោគជ័យ!', 'success');
+}
+
 function exportExcelReport() {
   var d = getMergedData();
   var wb = XLSX.utils.book_new();
-  var name = (d.info.lastNameKh||'') + ' ' + (d.info.firstNameKh||'');
-  var nameEn = (d.info.lastNameEn||'') + ' ' + (d.info.firstNameEn||'');
-  var bp = [d.info.birthPlace.village,d.info.birthPlace.commune,d.info.birthPlace.district,d.info.birthPlace.province].filter(Boolean).join(', ');
-  var ca = [d.info.currentAddr.street,d.info.currentAddr.village,d.info.currentAddr.commune,d.info.currentAddr.district,d.info.currentAddr.province].filter(Boolean).join(', ');
-  var warningItems = (d.warning && Array.isArray(d.warning.items)) ? d.warning.items : [];
-  var warningText = warningItems.map(function(w, i) {
-    return '#' + (i + 1) + ': ' + [w.date, w.level, w.detail, w.fileName ? ('File: ' + w.fileName) : ''].filter(Boolean).join(' | ');
-  }).join(' || ');
-
-  var rows = [
-    ["\u179A\u1794\u17B6\u1799\u1780\u17B6\u179A\u178E\u17CD\u179F\u1784\u17D2\u1781\u17C1\u1794 e-Profile \u2014 Officer Summary Report"],
-    ["Generated: " + new Date().toLocaleString()],
-    [""],
-    ["\u2550".repeat(50)],
-    ["1. \u1796\u17D0\u178F\u17CC\u1798\u17B6\u1793\u1793\u17B7\u1799\u17C4\u1787\u17B7\u178F - OFFICER INFORMATION"],
-    ["\u2550".repeat(50)],
-    [""],
-    ["Name (KH)", name], ["Name (EN)", nameEn],
-    ["Officer ID", d.info.officerId], ["ID Card", d.info.idCard],
-    ["Gender", d.info.gender], ["DOB", d.info.dob],
-    ["Ethnicity", d.info.ethnicity], ["Nationality", d.info.nationality],
-    ["Marital Status", d.info.maritalStatus],
-    ["Birthplace", bp], ["Current Address", ca],
-    ["Join Date", d.info.joinDate], ["Confirm Date", d.info.confirmDate],
-    ["Life Status", d.info.lifeStatus], ["Disability", d.info.disability],
-    ["Phone", d.info.phone], ["Email", d.info.email],
-    [""],
-    ["\u2550".repeat(50)],
-    ["2. \u1796\u17D0\u178F\u17CC\u1798\u17B6\u1793\u1782\u17D2\u179A\u17BD\u179F\u17B6\u179A - FAMILY"],
-    ["\u2550".repeat(50)],
-    [""],
-    ["Relation", d.family.relation],
-    ["Name", (d.family.lastNameKh||'')+' '+(d.family.firstNameKh||'')],
-    ["Gender", d.family.gender], ["Occupation", d.family.occupation],
-    [""],
-    ["\u2550".repeat(50)],
-    ["3. \u1794\u17D2\u179A\u179C\u178F\u17D2\u178F\u17B7\u1780\u17B6\u179A\u1784\u17B6\u179A - WORK HISTORY"],
-    ["\u2550".repeat(50)],
-    [""],
-    ["Ministry", d.work.ministry], ["Position", d.work.position],
-    ["Equivalent", d.work.equivalent], ["Status", d.work.status],
-    ["Period", (d.work.startDate||'?') + ' - ' + (d.work.endDate||'?')],
-    [""],
-    ["\u2550".repeat(50)],
-    ["4. \u1780\u17D2\u179A\u1794\u1781\u178E\u17D2\u178C - FRAMEWORK"],
-    ["\u2550".repeat(50)],
-    [""],
-    ["Type", d.framework.type], ["Rank", d.framework.rank], ["Grade", d.framework.grade],
-    ["Period", (d.framework.startDate||'?') + ' - ' + (d.framework.endDate||'?')],
-    [""],
-    ["\u2550".repeat(50)],
-    ["5. \u1798\u17BB\u1781\u1784\u17B6\u179A\u1794\u1793\u17D2\u1790\u17C2\u1798 - ADDITIONAL ROLE"],
-    ["\u2550".repeat(50)],
-    [""],
-    ["Position", d.additional.position], ["Ministry", d.additional.ministry], ["Status", d.additional.status],
-    [""],
-    ["\u2550".repeat(50)],
-    ["6. \u1794\u17D2\u179A\u179C\u178F\u17D2\u178F\u17B7\u179F\u17B7\u1780\u17D2\u179F\u17B6 - EDUCATION"],
-    ["\u2550".repeat(50)],
-    [""],
-    ["Degree", d.education.degree], ["Major", d.education.major],
-    ["Institution", d.education.institution], ["Country", d.education.country],
-    ["Period", (d.education.startDate||'?') + ' - ' + (d.education.endDate||'?')],
-    [""],
-    ["\u2550".repeat(50)],
-    ["7. \u1797\u17B6\u179F\u17B6 - LANGUAGE"],
-    ["\u2550".repeat(50)],
-    [""],
-    ["Language", d.language.language],
-    ["Read", d.language.reading], ["Write", d.language.writing],
-    ["Listen", d.language.listening], ["Speak", d.language.speaking],
-    [""],
-    ["\u2550".repeat(50)],
-    ["8. \u179B\u17B7\u1781\u17B7\u178F\u1796\u17D2\u179A\u1798\u17B6\u1793 - WARNING LETTERS"],
-    ["\u2550".repeat(50)],
-    [""],
-    ["Warning Count", String(warningItems.length)],
-    ["Warning Details", warningText || '-'],
-    ["Warning Note", (d.warning && d.warning.note) || ''],
-  ];
-
+  var rows = buildSummaryReportRows_(d, 'របាយការណ៍');
   var ws = XLSX.utils.aoa_to_sheet(rows);
-  setColWidths(ws, [42, 52]);
+  ws['!cols'] = [{wch:24},{wch:30},{wch:58}];
+  ws['!merges'] = [{s:{r:0,c:0},e:{r:0,c:2}},{s:{r:1,c:0},e:{r:1,c:2}},{s:{r:2,c:0},e:{r:2,c:2}},{s:{r:3,c:0},e:{r:3,c:2}}];
   XLSX.utils.book_append_sheet(wb, ws, "Report");
   XLSX.writeFile(wb, "eProfile_Report_" + getTimestamp() + ".xlsx");
-  showToast("\u1793\u17B6\u17C6\u1785\u17C1\u1789\u179A\u1794\u17B6\u1799\u1780\u17B6\u179A\u178E\u17CD Excel \u178A\u17C4\u1799\u1787\u17C4\u1782\u1787\u17D0\u1799!", "success");
+  showToast("នាំចេញរបាយការណ៍ Excel ដោយជោគជ័យ!", "success");
 }
 
 // ─── 3. Export Backup ───
 function exportExcelBackup() {
+  if (hasStoredRecordsForExport_()) {
+    exportAllEmployeesBackup_();
+    return;
+  }
   var d = getMergedData();
+  var safeD = excelSafeObject_(d);
   var wb = XLSX.utils.book_new();
   var ts = new Date().toISOString();
 
@@ -1860,15 +2279,15 @@ function exportExcelBackup() {
     ["Portal Version", "1.0"],
     ["Panels Backed Up", "8"],
   ];
-  var wsMeta = XLSX.utils.aoa_to_sheet(meta);
+  var wsMeta = XLSX.utils.aoa_to_sheet(excelSafeAoa_(meta));
   setColWidths(wsMeta, [30, 50]);
   XLSX.utils.book_append_sheet(wb, wsMeta, "_BACKUP_INFO");
 
   // Machine-readable JSON data sheet
   var jsonSheet = [["panel","json_data"]];
-  Object.keys(d).forEach(function(key) { jsonSheet.push([key, JSON.stringify(d[key])]); });
-  jsonSheet.push(["__FULL__", JSON.stringify(d)]);
-  var wsJson = XLSX.utils.aoa_to_sheet(jsonSheet);
+  Object.keys(safeD).forEach(function(key) { jsonSheet.push([key, excelSafeText_(JSON.stringify(safeD[key]))]); });
+  jsonSheet.push(["__FULL__", excelSafeText_(JSON.stringify(safeD))]);
+  var wsJson = XLSX.utils.aoa_to_sheet(excelSafeAoa_(jsonSheet));
   setColWidths(wsJson, [20, 120]);
   XLSX.utils.book_append_sheet(wb, wsJson, "_DATA");
 
@@ -1884,12 +2303,72 @@ function exportExcelBackup() {
     ["Language", (d.language.language||'N/A')+' R:'+(d.language.reading||'-')+' W:'+(d.language.writing||'-')+' L:'+(d.language.listening||'-')+' S:'+(d.language.speaking||'-')],
     ["Warning", (d.warning && d.warning.items && d.warning.items.length ? ('Count: ' + d.warning.items.length) : 'Count: 0') + ((d.warning && d.warning.note) ? (' | Note: ' + d.warning.note) : '')],
   ];
-  var wsSummary = XLSX.utils.aoa_to_sheet(summary);
+  var wsSummary = XLSX.utils.aoa_to_sheet(excelSafeAoa_(summary));
   setColWidths(wsSummary, [25, 80]);
   XLSX.utils.book_append_sheet(wb, wsSummary, "_SUMMARY");
 
   XLSX.writeFile(wb, "eProfile_Backup_" + getTimestamp() + ".xlsx");
   showToast("\u1794\u1798\u17D2\u179A\u17BB\u1784\u1791\u17BB\u1780 Backup \u178A\u17C4\u1799\u1787\u17C4\u1782\u1787\u17D0\u1799!", "success");
+}
+
+function exportAllEmployeesExcel() {
+  loadRecords();
+  if (!records || !records.length) {
+    showToast('No saved records to export.', 'error');
+    return;
+  }
+
+  var rows = [[
+    'អត្តលេខ', 'ឈ្មោះខ្មែរ', 'ឈ្មោះឡាតាំង', 'ភេទ', 'ថ្ងៃខែឆ្នាំកំណើត', 'ទូរស័ព្ទ', 'អ៊ីមែល',
+    'អាសយដ្ឋាន', 'ការសិក្សា', 'ជំនាញ', 'ភាសា', 'URL រូបថត', 'ក្រសួង/អង្គភាព', 'ការិយាល័យ',
+    'មុខតំណែង', 'សម្គាល់', 'ចំនួនលិខិតព្រមាន', 'កែប្រែចុងក្រោយ'
+  ]];
+
+  records.forEach(function(rec) {
+    var d = (rec && rec.data) ? rec.data : {};
+    var info = d.info || {};
+    var work = d.work || {};
+    var additional = d.additional || {};
+    var education = d.education || {};
+    var language = d.language || {};
+    var warning = d.warning || {};
+    var birth = info.birthPlace || {};
+    var curr = info.currentAddr || {};
+    var warningItems = Array.isArray(warning.items) ? warning.items : [];
+
+    var nameKh = ((info.lastNameKh || '') + ' ' + (info.firstNameKh || '')).trim();
+    var nameLatin = ((info.lastNameEn || '') + ' ' + (info.firstNameEn || '')).trim();
+    var address = [curr.street, curr.village, curr.commune, curr.district, curr.province].filter(Boolean).join(', ')
+      || [birth.village, birth.commune, birth.district, birth.province].filter(Boolean).join(', ');
+
+    rows.push([
+      excelSafeText_(info.officerId || rec.id || ''),
+      excelSafeText_(nameKh),
+      excelSafeText_(nameLatin),
+      excelSafeText_(info.gender || ''),
+      excelSafeText_(info.dob || ''),
+      excelSafeText_(info.phone || ''),
+      excelSafeText_(info.email || ''),
+      excelSafeText_(address || ''),
+      excelSafeText_([education.level, education.degree, education.institution].filter(Boolean).join(' | ')),
+      excelSafeText_(education.major || ''),
+      excelSafeText_([language.language, language.reading, language.writing, language.listening, language.speaking].filter(Boolean).join(' | ')),
+      excelSafeText_(info.photoUrl || ''),
+      excelSafeText_(work.ministry || additional.ministry || ''),
+      excelSafeText_([work.sub1, work.sub2, work.sub3, work.sub4, work.sub5].filter(Boolean).join(' / ')),
+      excelSafeText_(work.position || additional.position || ''),
+      excelSafeText_([work.note, additional.note, education.note].filter(Boolean).join(' | ')),
+      excelSafeText_(String(warningItems.length)),
+      excelSafeText_(rec.updated || '')
+    ]);
+  });
+
+  var wb = XLSX.utils.book_new();
+  var ws = XLSX.utils.aoa_to_sheet(excelSafeAoa_(rows));
+  setColWidths(ws, [12, 22, 22, 8, 14, 16, 22, 28, 24, 18, 24, 40, 20, 24, 20, 24, 12, 22]);
+  XLSX.utils.book_append_sheet(wb, ws, 'All Employees');
+  XLSX.writeFile(wb, 'eProfile_All_Employees_' + getTimestamp() + '.xlsx');
+  showToast('នាំចេញទិន្នន័យទាំងអស់ដោយជោគជ័យ!', 'success');
 }
 
 
@@ -1901,12 +2380,24 @@ var records = [];
 function loadRecords() {
   try {
     var raw = localStorage.getItem(STORE_KEY);
-    if (raw) records = JSON.parse(raw);
+    var parsed = raw ? JSON.parse(raw) : [];
+    records = Array.isArray(parsed) ? parsed : [];
   } catch(e) { records = []; }
 }
 
 function saveRecords() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(records)); } catch(e) {}
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(records));
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+function refreshStorageCount_() {
+  var countEl = document.getElementById('searchCount');
+  if (!countEl) return;
+  countEl.textContent = String((records || []).length) + ' records in storage';
 }
 
 function saveCurrentToStorage() {
@@ -1916,20 +2407,111 @@ function saveCurrentToStorage() {
   var nameEn = ((d.info.lastNameEn||'') + ' ' + (d.info.firstNameEn||'')).trim();
   // Find existing or create new
   var idx = records.findIndex(function(r){ return r.id === id; });
-  var rec = { id: id, name: name, nameEn: nameEn, data: d, updated: new Date().toISOString() };
+  var rec = { id: id, name: name, nameEn: nameEn, data: d, panelData: JSON.parse(JSON.stringify(panelData || {})), updated: new Date().toISOString() };
   if (idx >= 0) records[idx] = rec; else records.push(rec);
   saveRecords();
   showToast('Data saved to browser storage! (ID: ' + id + ')', 'success');
 }
 
+function panelDataFromMerged_(d) {
+  d = d || {};
+  var info = d.info || {};
+  var birthPlace = info.birthPlace || {};
+  var currentAddr = info.currentAddr || {};
+  var family = d.family || {};
+  var familyAddr = family.address || {};
+  var work = d.work || {};
+  var framework = d.framework || {};
+  var additional = d.additional || {};
+  var education = d.education || {};
+  var language = d.language || {};
+  var warning = d.warning || {};
+  var warningItems = Array.isArray(warning.items) ? warning.items : [];
+
+  var pd = {
+    info: {
+      info_oid: info.officerId || '', info_idc: info.idCard || '', info_govid: info.govId || '',
+      info_lnkh: info.lastNameKh || '', info_fnkh: info.firstNameKh || '',
+      info_lnen: info.lastNameEn || '', info_fnen: info.firstNameEn || '',
+      info_gender: info.gender || '', info_dob: info.dob || '',
+      info_eth: info.ethnicity || '', info_nat: info.nationality || '',
+      info_marital: info.maritalStatus || '',
+      info_photo_url: info.photoUrl || '',
+      info_bp_prov: birthPlace.province || '', info_bp_dist: birthPlace.district || '', info_bp_comm: birthPlace.commune || '', info_bp_vill: birthPlace.village || '', info_bp_street: birthPlace.street || '',
+      info_ca_prov: currentAddr.province || '', info_ca_dist: currentAddr.district || '', info_ca_comm: currentAddr.commune || '', info_ca_vill: currentAddr.village || '', info_ca_street: currentAddr.street || '',
+      info_jd: info.joinDate || '', info_cd: info.confirmDate || '',
+      info_life: info.lifeStatus || '', info_disab: info.disability || '',
+      info_bro: info.brothers || '', info_sis: info.sisters || '',
+      info_phone: info.phone || '', info_email: info.email || ''
+    },
+    family: {
+      fam_rel: family.relation || '', fam_idc: family.idCard || '',
+      fam_lnkh: family.lastNameKh || '', fam_fnkh: family.firstNameKh || '',
+      fam_lnen: family.lastNameEn || '', fam_fnen: family.firstNameEn || '',
+      fam_gender: family.gender || '', fam_dob: family.dob || '',
+      fam_eth: family.ethnicity || '', fam_nat: family.nationality || '',
+      fam_marital: family.maritalStatus || '', fam_life: family.lifeStatus || '',
+      fam_ca_prov: familyAddr.province || '', fam_ca_dist: familyAddr.district || '', fam_ca_comm: familyAddr.commune || '', fam_ca_vill: familyAddr.village || '', fam_ca_street: familyAddr.street || '',
+      fam_occ: family.occupation || ''
+    },
+    work: {
+      work_start: work.startDate || '', work_end: work.endDate || '',
+      work_min: work.ministry || '', work_level: work.level || '',
+      work_sub1: work.sub1 || '', work_sub2: work.sub2 || '', work_sub3: work.sub3 || '', work_sub4: work.sub4 || '', work_sub5: work.sub5 || '',
+      work_pos: work.position || '', work_eq: work.equivalent || '',
+      work_stat: work.status || '', work_note: work.note || ''
+    },
+    framework: {
+      fw_start: framework.startDate || '', fw_end: framework.endDate || '',
+      fw_type: framework.type || '', fw_cat: framework.category || '',
+      fw_rank: framework.rank || '', fw_grade: framework.grade || '', fw_idx: framework.indexUp || '',
+      fw_note: framework.note || ''
+    },
+    additional: {
+      add_start: additional.startDate || '', add_end: additional.endDate || '',
+      add_pos: additional.position || '', add_eq: additional.equivalent || '',
+      add_min: additional.ministry || '', add_level: additional.level || '',
+      add_stat: additional.status || '', add_note: additional.note || ''
+    },
+    education: {
+      edu_start: education.startDate || '', edu_end: education.endDate || '',
+      edu_lev: education.level || '', edu_course: education.course || '',
+      edu_deg: education.degree || '', edu_maj: education.major || '',
+      edu_inst: education.institution || '', edu_city: education.city || '', edu_country: education.country || '',
+      edu_note: education.note || ''
+    },
+    language: {
+      lang_sel: language.language || '',
+      lang_read: language.reading || '', lang_write: language.writing || '', lang_listen: language.listening || '', lang_speak: language.speaking || ''
+    },
+    warning: {
+      warn_total: String(warningItems.length),
+      warn_note: warning.note || ''
+    }
+  };
+
+  warningItems.forEach(function(item, i) {
+    var n = i + 1;
+    pd.warning['warn' + n + '_date'] = item.date || '';
+    pd.warning['warn' + n + '_level'] = item.level || '';
+    pd.warning['warn' + n + '_detail'] = item.detail || '';
+    pd.warning['warn' + n + '_file_filename'] = item.fileName || '';
+  });
+
+  return pd;
+}
+
 function loadRecordById(id) {
   var rec = records.find(function(r){ return r.id === id; });
   if (!rec) { showToast('Record not found!', 'error'); return; }
-  // We store record data but restoring to form requires re-rendering
-  // For now, store as active record
-  window._activeRecord = rec.data;
+  if (rec.panelData && typeof rec.panelData === 'object') {
+    panelData = JSON.parse(JSON.stringify(rec.panelData));
+  } else {
+    panelData = panelDataFromMerged_(rec.data || {});
+  }
+  savePanelDraft_();
   showToast('Record loaded: ' + (rec.name||rec.id), 'success');
-  goTo(0); // Go to panel 1
+  goTo(0, { skipSave: true }); // Go to panel 1
 }
 
 // ═══ SEARCH ═══
@@ -1986,7 +2568,6 @@ function exSummary() {
   rows.push(['','','']);
 
   // Section 1
-  rows.push(['ផ្ទាំង','វាល','តម្លៃ']);
   rows.push(['','','']);
 
   // P1: Officer Info
@@ -2080,7 +2661,7 @@ function exSummary() {
   });
   p8.forEach(function(r,i){ rows.push([i===0?'៨. លិខិតព្រមាន':'', r[0], r[1]||'']); });
 
-  var ws = XLSX.utils.aoa_to_sheet(rows);
+  var ws = XLSX.utils.aoa_to_sheet(excelSafeAoa_(rows));
   ws['!cols'] = [{wch:22},{wch:28},{wch:50}];
 
   // Merge header cells
@@ -2092,8 +2673,50 @@ function exSummary() {
   ];
 
   XLSX.utils.book_append_sheet(wb, ws, 'របាយការណ៍សង្ខេប');
-  XLSX.writeFile(wb, 'eProfile_Summary_' + getTimestamp() + '.xlsx');
-  showToast('នាំចេញរបាយការណ៍សង្ខេបដោយជោគជ័យ!', 'success');
+  XLSX.writeFile(wb, "eProfile_Summary_" + getTimestamp() + ".xlsx");
+  showToast("នាំចេញរបាយការណ៍សង្ខេបដោយជោគជ័យ!", "success");
+}
+
+function exportAllEmployeesBackup_() {
+  loadRecords();
+  if (!records || !records.length) {
+    showToast('No saved records to backup.', 'error');
+    return;
+  }
+  var wb = XLSX.utils.book_new();
+  var ts = new Date().toISOString();
+
+  var meta = [
+    ['eProfile Backup File (All Employees)'], [''],
+    ['Backup Timestamp', ts],
+    ['Total Records', String(records.length)]
+  ];
+  var wsMeta = XLSX.utils.aoa_to_sheet(excelSafeAoa_(meta));
+  setColWidths(wsMeta, [32, 60]);
+  XLSX.utils.book_append_sheet(wb, wsMeta, '_BACKUP_INFO');
+
+  var indexRows = [['ID', 'Name (KH)', 'Updated At']];
+  var dataRows = [['id', 'json_data']];
+  records.forEach(function(rec) {
+    var d = (rec && rec.data) ? rec.data : {};
+    var safeD = excelSafeObject_(d);
+    var info = d.info || {};
+    var id = String((info.officerId || rec.id || '')).trim();
+    var nameKh = ((info.lastNameKh || '') + ' ' + (info.firstNameKh || '')).trim();
+    indexRows.push([excelSafeText_(id), excelSafeText_(nameKh), excelSafeText_(rec.updated || '')]);
+    dataRows.push([excelSafeText_(id), excelSafeText_(JSON.stringify(safeD))]);
+  });
+
+  var wsIndex = XLSX.utils.aoa_to_sheet(excelSafeAoa_(indexRows));
+  setColWidths(wsIndex, [18, 28, 24]);
+  XLSX.utils.book_append_sheet(wb, wsIndex, '_INDEX');
+
+  var wsData = XLSX.utils.aoa_to_sheet(excelSafeAoa_(dataRows));
+  setColWidths(wsData, [18, 120]);
+  XLSX.utils.book_append_sheet(wb, wsData, '_DATA_ALL');
+
+  XLSX.writeFile(wb, 'eProfile_Backup_All_' + getTimestamp() + '.xlsx');
+  showToast('បម្រុងទុកទិន្នន័យទាំងអស់ដោយជោគជ័យ!', 'success');
 }
 
 // ═══ PROFESSIONAL EXCEL EXPORT - DATA ═══
@@ -2111,7 +2734,7 @@ function exBackup() { exportExcelBackup(); }
 
 // Initialize storage on load
 loadRecords();
-document.getElementById('searchCount').textContent = records.length + ' records in storage';
+refreshStorageCount_();
 
 
 // ═══ FAMILY MULTI-ENTRY ═══
@@ -2315,8 +2938,11 @@ function toBackendProfilePayload_(d, requestId) {
     education: [education.level, education.degree, education.institution].filter(function(v) { return String(v || '').trim(); }).join(' | '),
     specialization: String(education.major || '').trim(),
     languages: [language.language, language.reading, language.writing, language.listening, language.speaking].filter(function(v) { return String(v || '').trim(); }).join(' | '),
+    photoUrl: String(info.photoUrl || '').trim(),
     department: String(work.ministry || additional.ministry || '').trim(),
-    office: [work.sub1, work.sub2, work.sub3, work.sub4, work.sub5].filter(function(v) { return String(v || '').trim(); }).join(' / '),
+    office: [work.sub1, work.sub2, work.sub3, work.sub4, work.sub5, additional.sub1, additional.sub2, additional.sub3, additional.sub4, additional.sub5]
+      .filter(function(v) { return String(v || '').trim(); })
+      .join(' / '),
     position: String(work.position || additional.position || '').trim(),
     notes: [work.note, additional.note, education.note].filter(function(v) { return String(v || '').trim(); }).join(' | '),
     fullJson: JSON.stringify(d || {})
@@ -2347,17 +2973,24 @@ async function saveProgress() {
   var d = getMergedData();
   var id = d.info.officerId || ('REC_' + Date.now());
   var name = ((d.info.lastNameKh||'') + ' ' + (d.info.firstNameKh||'')).trim();
+  var localSaved = false;
   try {
-    var records = JSON.parse(localStorage.getItem('eprofile_records')||'[]');
+    loadRecords();
     var idx = records.findIndex(function(r){ return r.id === id; });
-    var rec = { id:id, name:name, data:d, updated: new Date().toISOString() };
+    var rec = { id:id, name:name, data:d, panelData: JSON.parse(JSON.stringify(panelData || {})), updated: new Date().toISOString() };
     if (idx >= 0) records[idx] = rec; else records.push(rec);
-    localStorage.setItem('eprofile_records', JSON.stringify(records));
+    localSaved = saveRecords();
   } catch(e) {}
   savePanelDraft_();
   // Update the employee record table
   if (typeof updateEmpSummary === 'function') updateEmpSummary();
-  showToast('Saved locally! (ID: ' + id + ')', 'success');
+  loadRecords();
+  refreshStorageCount_();
+  if (localSaved) {
+    showToast('Saved locally! (ID: ' + id + ')', 'success');
+  } else {
+    showToast('Local save failed. Please allow browser storage/site data.', 'error');
+  }
   try {
     var sync = await syncProfileToBackend_(d);
     if (sync && sync.success) {
@@ -2366,7 +2999,7 @@ async function saveProgress() {
       showToast('Saved locally only. Please set EPROFILE_WEB_APP_URL.', 'error');
     }
   } catch (err) {
-    showToast('Saved locally, but sync failed: ' + err.message, 'error');
+    showToast((localSaved ? 'Saved locally' : 'Local save failed') + ', and sync failed: ' + err.message, 'error');
   }
 }
 
@@ -2385,6 +3018,7 @@ async function deleteEmployeeData_(employeeId) {
     var before = records.length;
     records = records.filter(function(r) { return String(r.id || '').trim() !== id; });
     if (records.length !== before) saveRecords();
+    refreshStorageCount_();
     if (typeof updateEmpSummary === 'function') updateEmpSummary();
   } catch (e) {}
 
@@ -2440,7 +3074,7 @@ function newRecord() {
   if (!confirm('\u1785\u17B6\u1794\u17CB\u1795\u17D2\u178F\u17BE\u1798\u1791\u17B7\u1793\u17D2\u1793\u1793\u17D0\u1799\u1790\u17D2\u1798\u17B8?')) return;
   panelData = {};
   clearPanelDraft_();
-  goTo(0);
+  goTo(0, { skipSave: true });
   showToast('\u1785\u17B6\u1794\u17CB\u1795\u17D2\u178F\u17BE\u1798\u1791\u17B7\u1793\u17D2\u1793\u1793\u17D0\u1799\u1790\u17D2\u1798\u17B8!', 'success');
 }
 
@@ -2503,7 +3137,7 @@ function downloadSummary() {
     warningRows.push(['លិខិតព្រមាន #' + (i + 1), [w.date, w.level, w.detail, w.fileName ? ('ឯកសារ: ' + w.fileName) : ''].filter(Boolean).join(' | ')]);
   });
   add('៨. លិខិតព្រមាន', warningRows);
-  var ws = XLSX.utils.aoa_to_sheet(rows);
+  var ws = XLSX.utils.aoa_to_sheet(excelSafeAoa_(rows));
   ws['!cols'] = [{wch:24},{wch:28},{wch:45}];
   ws['!merges'] = [{s:{r:0,c:0},e:{r:0,c:2}},{s:{r:1,c:0},e:{r:1,c:2}},{s:{r:2,c:0},e:{r:2,c:2}},{s:{r:3,c:0},e:{r:3,c:2}}];
   XLSX.utils.book_append_sheet(wb, ws, '\u179A\u1794\u17B6\u1799\u1780\u17B6\u179A\u178E\u17CD');
@@ -2548,7 +3182,7 @@ function startNew() {
   if (!confirm('\u1785\u1784\u17CB\u1785\u17B6\u1794\u17CB\u1795\u17D2\u178F\u17BE\u1798\u1791\u17B7\u1793\u17D2\u1793\u1793\u17D0\u1799\u1790\u17D2\u1798\u17B8?')) return;
   panelData = {};
   clearPanelDraft_();
-  goTo(0);
+  goTo(0, { skipSave: true });
   showToast('\u1785\u17B6\u1794\u17CB\u1795\u17D2\u178F\u17BE\u1798\u1791\u17B7\u1793\u17D2\u1793\u1793\u17D0\u1799\u1790\u17D2\u1798\u17B8!', 'success');
 }
 
