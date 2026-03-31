@@ -2326,15 +2326,33 @@ function exportPrintPdfReport() {
   var d = getMergedData();
   var info = d.info || {};
   var rows = buildSummaryReportRows_(d, 'បោះពុម្ព PDF');
-  var photoUrl = String(info.photoUrl || '').trim();
+  var photoFromRows = '';
+  for (var ri = 0; ri < rows.length; ri++) {
+    var rr = rows[ri] || [];
+    if (String(rr[1] || '').trim() === 'URL រូបថត') {
+      photoFromRows = String(rr[2] || '').trim();
+      break;
+    }
+  }
+  var photoUrl = String(info.photoUrl || photoFromRows || '').trim();
+
+  function safeCellText_(value) {
+    var s = String(value || '').trim();
+    if (!s) s = 'គ្មានទិន្នន័យ';
+    return s.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
   var photoHtml = photoUrl
     ? '<div class="photo-wrap"><img src="' + photoUrl.replace(/"/g, '&quot;') + '" alt="Profile Photo"></div>'
     : '<div class="photo-wrap photo-empty">គ្មានរូបថត</div>';
   var bodyRows = rows.map(function(r) {
+    var c1 = safeCellText_(r[0]);
+    var c2 = safeCellText_(r[1]);
+    var c3 = safeCellText_(r[2]);
     return '<tr>' +
-      '<td>' + String(r[0] || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</td>' +
-      '<td>' + String(r[1] || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</td>' +
-      '<td>' + String(r[2] || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</td>' +
+      '<td>' + c1 + '</td>' +
+      '<td>' + c2 + '</td>' +
+      '<td>' + c3 + '</td>' +
       '</tr>';
   }).join('');
 
@@ -2363,7 +2381,7 @@ function exportPrintPdfReport() {
     '<div class="head"><div class="head-main"><h1>' + title + '</h1>' +
     '<div class="meta">បោះពុម្ពនៅ: ' + new Date().toLocaleString('km-KH') + '</div></div>' + photoHtml + '</div>' +
     '<table>' + bodyRows + '</table>' +
-    '<script>window.onload=function(){setTimeout(function(){window.print();},250);}<\/script>' +
+    '<script>(function(){function go(){setTimeout(function(){window.print();},300);}window.onload=function(){var img=document.querySelector(".photo-wrap img");if(!img){go();return;}if(img.complete){go();return;}img.onload=go;img.onerror=go;setTimeout(go,1200);};})();<\/script>' +
     '</div></body></html>';
 
   var printWin = window.open('', '_blank');
