@@ -1252,7 +1252,7 @@ function buildSummary() {
   var ne = ((d.info.lastNameEn || '') + ' ' + (d.info.firstNameEn || '')).trim() || '';
   var bp = [d.info.birthPlace.village, d.info.birthPlace.commune, d.info.birthPlace.district, d.info.birthPlace.province].filter(Boolean).join(', ') || '';
   var ca = [d.info.currentAddr.street, d.info.currentAddr.village, d.info.currentAddr.commune, d.info.currentAddr.district, d.info.currentAddr.province].filter(Boolean).join(', ') || '';
-  var hasAny = d.info.officerId || d.info.lastNameKh || d.info.firstNameKh || d.info.phone || d.work.ministry || d.education.degree || d.language.language;
+  var hasAny = d.info.officerId || d.info.lastNameKh || d.info.firstNameKh || d.info.phone || d.work.ministry || d.education.degree || d.language.language || (d.warning && (d.warning.note || (Array.isArray(d.warning.items) && d.warning.items.length)));
 
   if (!hasAny) {
     return '<div style="text-align:center;padding:40px 20px"><h2 style="font-size:18px;font-weight:900;color:var(--accent)">ព័ត៌មានសង្ខេបរបស់និយោជិត</h2>' +
