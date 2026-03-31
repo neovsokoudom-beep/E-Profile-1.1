@@ -1423,6 +1423,20 @@ function buildSummary() {
   });
   html += section('៧. ភាសា', langRows, 2);
 
+  var warningItems = (d.warning && Array.isArray(d.warning.items)) ? d.warning.items : [];
+  var warningRows = [
+    ['ចំនួនលិខិតព្រមាន', String(warningItems.length)],
+    ['កំណត់សម្គាល់', (d.warning && d.warning.note) || '']
+  ];
+  warningItems.forEach(function(w, idx) {
+    var n = idx + 1;
+    warningRows.push(['លិខិតព្រមាន #' + n + ' - កាលបរិច្ឆេទព្រមាន', w.date]);
+    warningRows.push(['លិខិតព្រមាន #' + n + ' - ប្រភេទព្រមាន', w.level]);
+    warningRows.push(['លិខិតព្រមាន #' + n + ' - លម្អិតលិខិតព្រមាន', w.detail]);
+    warningRows.push(['លិខិតព្រមាន #' + n + ' - ឯកសារ', w.fileName]);
+  });
+  html += section('៨. លិខិតព្រមាន', warningRows, 2);
+
   return html + footerBar() + empRecord('summary');
 }
 
