@@ -2323,38 +2323,13 @@ function exportExcelReport() {
 }
 
 function exportPrintPdfReport() {
-  var d = getMergedData();
-  var info = d.info || {};
-  var rows = buildSummaryReportRows_(d, 'បោះពុម្ព PDF');
-  var photoFromRows = '';
-  for (var ri = 0; ri < rows.length; ri++) {
-    var rr = rows[ri] || [];
-    if (String(rr[1] || '').trim() === 'URL រូបថត') {
-      photoFromRows = String(rr[2] || '').trim();
-      break;
-    }
-  }
-  var photoUrl = String(info.photoUrl || photoFromRows || '').trim();
-
-  function safeCellText_(value) {
-    var s = String(value || '').trim();
-    if (!s) s = 'គ្មានទិន្នន័យ';
-    return s.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
-  var photoHtml = photoUrl
-    ? '<div class="photo-wrap"><img src="' + photoUrl.replace(/"/g, '&quot;') + '" alt="Profile Photo"></div>'
-    : '<div class="photo-wrap photo-empty">គ្មានរូបថត</div>';
-  var bodyRows = rows.map(function(r) {
-    var c1 = safeCellText_(r[0]);
-    var c2 = safeCellText_(r[1]);
-    var c3 = safeCellText_(r[2]);
-    return '<tr>' +
-      '<td>' + c1 + '</td>' +
-      '<td>' + c2 + '</td>' +
-      '<td>' + c3 + '</td>' +
-      '</tr>';
-  }).join('');
+  var summaryHtml = buildSummary();
+  var holder = document.createElement('div');
+  holder.innerHTML = summaryHtml;
+  var footer = holder.querySelector('.footer-bar');
+  if (footer) footer.remove();
+  var empRecordBlock = holder.querySelector('.emp-record');
+  if (empRecordBlock) empRecordBlock.remove();
 
   var title = 'ព័ត៌មានសង្ខេបរបស់និយោជិត';
   var printHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
@@ -2364,24 +2339,24 @@ function exportPrintPdfReport() {
     'html,body{margin:0;padding:0;background:#fff;}' +
     'body{font-family: Battambang, \'Noto Sans Khmer\', sans-serif; color:#1a2332; font-size:12px;}' +
     '.page{width:190mm;min-height:277mm;margin:0 auto;}' +
-    '.head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;}' +
-    '.head-main{flex:1;min-width:0;}' +
-    '.photo-wrap{width:34mm;height:42mm;border:1px solid #d5deea;border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f7f9fc;font-size:10px;color:#5e6e82;}' +
-    '.photo-wrap img{width:100%;height:100%;object-fit:cover;display:block;}' +
-    '.photo-empty{font-weight:700;}' +
-    'h1{font-size:18px; margin:0 0 10px; text-align:center;}' +
-    '.meta{font-size:11px; color:#4b5c72; margin-bottom:10px; text-align:center;}' +
-    'table{width:100%; border-collapse:collapse; table-layout:fixed;}' +
-    'td{border:1px solid #d5deea; padding:6px 8px; vertical-align:top; word-break:break-word;}' +
-    'td:nth-child(1){width:20%; font-weight:700; color:#0e3d99;}' +
-    'td:nth-child(2){width:28%; font-weight:700;}' +
-    'td:nth-child(3){width:52%;}' +
-    'tr:nth-child(odd){background:#f8fbff;}' +
+    '.section-label{margin-top:14px;padding:8px 10px;border-radius:8px;background:#e8f0ff;color:#0e3d99;font-weight:800;}' +
+    '.form-grid{display:grid;gap:10px;}' +
+    '.form-grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr));}' +
+    '.field{display:flex;flex-direction:column;gap:5px;}' +
+    '.field label{font-size:11px;font-weight:700;color:#3d4f63;}' +
+    '.summary-view{min-height:36px;padding:8px 10px;border:1px solid #d5deea;border-radius:8px;background:#f8fbff;line-height:1.5;word-break:break-word;}' +
+    '.profile-top{display:grid;grid-template-columns:1fr 140px;gap:12px;align-items:start;margin-bottom:10px;}' +
+    '.profile-fields .form-grid{margin-bottom:8px;}' +
+    '.profile-photo{display:flex;justify-content:flex-end;}' +
+    '.photo-box{width:120px;height:150px;border:1px solid #d5deea;border-radius:8px;overflow:hidden;background:#f7f9fc;display:flex;align-items:center;justify-content:center;}' +
+    '.photo-box img{width:100%;height:100%;object-fit:cover;display:block;}' +
+    '.placeholder{font-size:32px;opacity:.6;}' +
+    'h2{margin:0 0 6px;}' +
+    'p{margin:0 0 8px;}' +
+    '@media print {.page{margin:0;}}' +
     '</style></head><body><div class="page">' +
-    '<div class="head"><div class="head-main"><h1>' + title + '</h1>' +
-    '<div class="meta">បោះពុម្ពនៅ: ' + new Date().toLocaleString('km-KH') + '</div></div>' + photoHtml + '</div>' +
-    '<table>' + bodyRows + '</table>' +
-    '<script>(function(){function go(){setTimeout(function(){window.print();},300);}window.onload=function(){var img=document.querySelector(".photo-wrap img");if(!img){go();return;}if(img.complete){go();return;}img.onload=go;img.onerror=go;setTimeout(go,1200);};})();<\/script>' +
+    holder.innerHTML +
+    '<script>(function(){function go(){setTimeout(function(){window.print();},350);}window.onload=function(){var imgs=document.querySelectorAll("img");if(!imgs.length){go();return;}var done=0;function mark(){done++;if(done>=imgs.length)go();}for(var i=0;i<imgs.length;i++){if(imgs[i].complete){mark();}else{imgs[i].onload=mark;imgs[i].onerror=mark;}}setTimeout(go,1500);};})();<\/script>' +
     '</div></body></html>';
 
   var printWin = window.open('', '_blank');
