@@ -1262,7 +1262,7 @@ function buildSummary() {
       '</div></div>' + footerBar() + empRecord('summary');
   }
 
-  function sv(v) { return v ? String(v) : '—'; }
+  function sv(v) { return v ? String(v) : 'គ្មានទិន្នន័យ'; }
   function section(title, items, cols) {
     return '<div class="section-label" style="margin-top:18px">' + title + '</div>' +
       '<div class="form-grid cols-' + (cols || 2) + '" style="margin-top:12px">' +
@@ -2324,7 +2324,12 @@ function exportExcelReport() {
 
 function exportPrintPdfReport() {
   var d = getMergedData();
+  var info = d.info || {};
   var rows = buildSummaryReportRows_(d, 'បោះពុម្ព PDF');
+  var photoUrl = String(info.photoUrl || '').trim();
+  var photoHtml = photoUrl
+    ? '<div class="photo-wrap"><img src="' + photoUrl.replace(/"/g, '&quot;') + '" alt="Profile Photo"></div>'
+    : '<div class="photo-wrap photo-empty">គ្មានរូបថត</div>';
   var bodyRows = rows.map(function(r) {
     return '<tr>' +
       '<td>' + String(r[0] || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</td>' +
@@ -2341,6 +2346,11 @@ function exportPrintPdfReport() {
     'html,body{margin:0;padding:0;background:#fff;}' +
     'body{font-family: Battambang, \'Noto Sans Khmer\', sans-serif; color:#1a2332; font-size:12px;}' +
     '.page{width:190mm;min-height:277mm;margin:0 auto;}' +
+    '.head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;}' +
+    '.head-main{flex:1;min-width:0;}' +
+    '.photo-wrap{width:34mm;height:42mm;border:1px solid #d5deea;border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#f7f9fc;font-size:10px;color:#5e6e82;}' +
+    '.photo-wrap img{width:100%;height:100%;object-fit:cover;display:block;}' +
+    '.photo-empty{font-weight:700;}' +
     'h1{font-size:18px; margin:0 0 10px; text-align:center;}' +
     '.meta{font-size:11px; color:#4b5c72; margin-bottom:10px; text-align:center;}' +
     'table{width:100%; border-collapse:collapse; table-layout:fixed;}' +
@@ -2350,8 +2360,8 @@ function exportPrintPdfReport() {
     'td:nth-child(3){width:52%;}' +
     'tr:nth-child(odd){background:#f8fbff;}' +
     '</style></head><body><div class="page">' +
-    '<h1>' + title + '</h1>' +
-    '<div class="meta">បោះពុម្ពនៅ: ' + new Date().toLocaleString('km-KH') + '</div>' +
+    '<div class="head"><div class="head-main"><h1>' + title + '</h1>' +
+    '<div class="meta">បោះពុម្ពនៅ: ' + new Date().toLocaleString('km-KH') + '</div></div>' + photoHtml + '</div>' +
     '<table>' + bodyRows + '</table>' +
     '<script>window.onload=function(){setTimeout(function(){window.print();},250);}<\/script>' +
     '</div></body></html>';
