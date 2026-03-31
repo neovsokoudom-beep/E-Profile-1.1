@@ -1786,7 +1786,11 @@ function getMergedData() {
     });
     var warningItems = Object.keys(itemMap)
       .sort(function(a, b) { return Number(a) - Number(b); })
-      .map(function(idx) { return itemMap[idx]; })
+      .map(function(idx) {
+        var entry = itemMap[idx] || {};
+        entry.fileSlot = 'warn' + idx + '_file';
+        return entry;
+      })
       .filter(function(w) { return String(w.date || w.level || w.detail || w.fileName || '').trim(); });
     d.warning = {
       count: warningItems.length,
@@ -2919,12 +2923,51 @@ function joinAddress_(addr) {
     .join(', ');
 }
 
-function toBackendProfilePayload_(d, requestId) {
+function getFileById_(id) {
+  return new Promise(function(resolve) {
+    if (!fileDB) { resolve(null); return; }
+    try {
+      var tx = fileDB.transaction('files', 'readonly');
+      var req = tx.objectStore('files').get(String(id || '').trim());
+      req.onsuccess = function() { resolve(req.result || null); };
+      req.onerror = function() { resolve(null); };
+    } catch (e) {
+      resolve(null);
+    }
+  });
+}
+
+async function collectFileUploadsForSync_(d) {
+  var out = [];
+  var seen = {};
+  var ids = ['fw_file', 'edu_file', 'lang_file'];
+  var warningItems = (d && d.warning && Array.isArray(d.warning.items)) ? d.warning.items : [];
+  for (var i = 0; i < warningItems.length; i++) {
+    ids.push('warn' + (i + 1) + '_file');
+  }
+  for (var j = 0; j < ids.length; j++) {
+    var fid = String(ids[j] || '').trim();
+    if (!fid || seen[fid]) continue;
+    seen[fid] = true;
+    var rec = await getFileById_(fid);
+    if (!rec || !rec.data) continue;
+    out.push({
+      id: fid,
+      name: String(rec.name || fid).trim(),
+      type: String(rec.type || '').trim(),
+      dataUrl: String(rec.data || '').trim()
+    });
+  }
+  return out;
+}
+
+async function toBackendProfilePayload_(d, requestId) {
   var info = d.info || {};
   var work = d.work || {};
   var additional = d.additional || {};
   var education = d.education || {};
   var language = d.language || {};
+  var fileUploads = await collectFileUploadsForSync_(d);
   return {
     requestId: requestId,
     id: String(info.officerId || '').trim(),
@@ -2945,6 +2988,7 @@ function toBackendProfilePayload_(d, requestId) {
       .join(' / '),
     position: String(work.position || additional.position || '').trim(),
     notes: [work.note, additional.note, education.note].filter(function(v) { return String(v || '').trim(); }).join(' | '),
+    fileUploads: fileUploads,
     fullJson: JSON.stringify(d || {})
   };
 }
@@ -2955,7 +2999,7 @@ async function syncProfileToBackend_(d) {
     return { success: false, skipped: true, error: 'Set EPROFILE_WEB_APP_URL first.' };
   }
   var requestId = createRequestId_();
-  var payload = toBackendProfilePayload_(d, requestId);
+  var payload = await toBackendProfilePayload_(d, requestId);
   var res = await fetch(apiUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
