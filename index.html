@@ -2122,6 +2122,8 @@ function buildSummaryReportRows_(d, titlePrefix) {
   add(secTitle_('ព័ត៌មាននិយោជិត', 1), [
     ['ឈ្មោះ (ខ្មែរ)', nm],
     ['ឈ្មោះ (ឡាតាំង)', ne],
+    ['អត្តលេខនិយោជិត', d.info.officerId],
+    ['លេខអត្តសញ្ញាណប័ណ្ណ', d.info.idCard],
     ['ភេទ', d.info.gender],
     ['ថ្ងៃខែឆ្នាំកំណើត', d.info.dob],
     ['ជនជាតិ', d.info.ethnicity],
@@ -2139,68 +2141,122 @@ function buildSummaryReportRows_(d, titlePrefix) {
     ['URL រូបថត', d.info.photoUrl || '']
   ]);
 
-  add(secTitle_('ព័ត៌មានគ្រួសារ', 2), [
+  var familySectionItems = [
     ['ទំនាក់ទំនង', d.family.relation],
-    ['ឈ្មោះ', ((d.family.lastNameKh || '') + ' ' + (d.family.firstNameKh || '')).trim()],
-    ['ភេទ / ថ្ងៃខែឆ្នាំកំណើត', sj(d.family.gender, d.family.dob)],
+    ['លេខអត្តសញ្ញាណប័ណ្ណ', d.family.idCard],
+    ['នាមត្រកូល (ខ្មែរ)', d.family.lastNameKh],
+    ['នាមខ្លួន (ខ្មែរ)', d.family.firstNameKh],
+    ['នាមត្រកូល (ឡាតាំង)', d.family.lastNameEn],
+    ['នាមខ្លួន (ឡាតាំង)', d.family.firstNameEn],
+    ['ភេទ', d.family.gender],
+    ['ថ្ងៃខែឆ្នាំកំណើត', d.family.dob],
+    ['ជនជាតិ', d.family.ethnicity],
+    ['សញ្ជាតិ', d.family.nationality],
+    ['ស្ថានភាពគ្រួសារ', d.family.maritalStatus],
+    ['ស្ថានភាពរស់នៅ', d.family.lifeStatus],
+    ['អាសយដ្ឋាន', [d.family.address && d.family.address.street, d.family.address && d.family.address.village, d.family.address && d.family.address.commune, d.family.address && d.family.address.district, d.family.address && d.family.address.province].filter(Boolean).join(', ')],
     ['មុខរបរ', d.family.occupation]
-  ]);
+  ];
+  (Array.isArray(d.family.entries) ? d.family.entries : []).forEach(function(f, idx) {
+    var n = idx + 2;
+    familySectionItems.push(['ព័ត៌មានគ្រួសារ #' + n + ' - ទំនាក់ទំនង', f.relation]);
+    familySectionItems.push(['ព័ត៌មានគ្រួសារ #' + n + ' - លេខអត្តសញ្ញាណប័ណ្ណ', f.idCard]);
+    familySectionItems.push(['ព័ត៌មានគ្រួសារ #' + n + ' - នាមត្រកូល (ខ្មែរ)', f.lastNameKh]);
+    familySectionItems.push(['ព័ត៌មានគ្រួសារ #' + n + ' - នាមខ្លួន (ខ្មែរ)', f.firstNameKh]);
+    familySectionItems.push(['ព័ត៌មានគ្រួសារ #' + n + ' - នាមត្រកូល (ឡាតាំង)', f.lastNameEn]);
+    familySectionItems.push(['ព័ត៌មានគ្រួសារ #' + n + ' - នាមខ្លួន (ឡាតាំង)', f.firstNameEn]);
+    familySectionItems.push(['ព័ត៌មានគ្រួសារ #' + n + ' - ភេទ', f.gender]);
+    familySectionItems.push(['ព័ត៌មានគ្រួសារ #' + n + ' - ថ្ងៃខែឆ្នាំកំណើត', f.dob]);
+    familySectionItems.push(['ព័ត៌មានគ្រួសារ #' + n + ' - មុខរបរ', f.occupation]);
+    familySectionItems.push(['ព័ត៌មានគ្រួសារ #' + n + ' - ទូរស័ព្ទ', f.phone]);
+  });
+  add(secTitle_('ព័ត៌មានគ្រួសារ', 2), familySectionItems);
 
   var workSectionItems = [
-    ['កាលបរិច្ឆេទ', sj(d.work.startDate, d.work.endDate, ' ~ ')],
+    ['ថ្ងៃចាប់ផ្តើម', d.work.startDate],
+    ['ថ្ងៃបញ្ចប់', d.work.endDate],
     ['ក្រសួង', d.work.ministry],
-    ['មុខតំណែង / ឋានៈស្មើ', sj(d.work.position, d.work.equivalent)],
-    ['ស្ថានភាព', d.work.status]
+    ['មុខតំណែង', d.work.position],
+    ['ឋានៈស្មើ', d.work.equivalent],
+    ['ស្ថានភាព', d.work.status],
+    ['សម្គាល់', d.work.note]
   ];
   (Array.isArray(d.work.entries) ? d.work.entries : []).forEach(function(w, idx) {
-    workSectionItems.push([
-      'ប្រវត្តិការងារ #' + (idx + 2),
-      [sj(w.startDate, w.endDate, ' ~ '), w.ministry, sj(w.position, w.equivalent), w.status, w.note]
-        .filter(function(v) { return String(v || '').trim(); })
-        .join(' | ')
-    ]);
+    var n = idx + 2;
+    workSectionItems.push(['ប្រវត្តិការងារ #' + n + ' - ថ្ងៃចាប់ផ្តើម', w.startDate]);
+    workSectionItems.push(['ប្រវត្តិការងារ #' + n + ' - ថ្ងៃបញ្ចប់', w.endDate]);
+    workSectionItems.push(['ប្រវត្តិការងារ #' + n + ' - ក្រសួង', w.ministry]);
+    workSectionItems.push(['ប្រវត្តិការងារ #' + n + ' - មុខតំណែង', w.position]);
+    workSectionItems.push(['ប្រវត្តិការងារ #' + n + ' - ឋានៈស្មើ', w.equivalent]);
+    workSectionItems.push(['ប្រវត្តិការងារ #' + n + ' - ស្ថានភាព', w.status]);
+    workSectionItems.push(['ប្រវត្តិការងារ #' + n + ' - សម្គាល់', w.note]);
   });
   add(secTitle_('ប្រវត្តិការងារ', 3), workSectionItems);
 
   add(secTitle_('ក្របខណ្ឌ', 4), [
-    ['កាលបរិច្ឆេទ', sj(d.framework.startDate, d.framework.endDate, ' ~ ')],
+    ['ថ្ងៃចាប់ផ្តើម', d.framework.startDate],
+    ['ថ្ងៃបញ្ចប់', d.framework.endDate],
     ['ប្រភេទ', d.framework.type],
-    ['ប្រភេទ / ឋានន្តរសក្ដិ / ថ្នាក់', sj(d.framework.category, d.framework.rank) + (d.framework.grade ? (' / ' + d.framework.grade) : '')],
-    ['ឡើងសន្ទស្សន៍តាម', d.framework.indexUp]
+    ['ប្រភេទរង', d.framework.category],
+    ['ឋានន្តរសក្ដិ', d.framework.rank],
+    ['ថ្នាក់', d.framework.grade],
+    ['ឡើងសន្ទស្សន៍តាម', d.framework.indexUp],
+    ['សម្គាល់', d.framework.note]
   ]);
 
   add(secTitle_('មុខងារបន្ថែម', 5), [
-    ['កាលបរិច្ឆេទ', sj(d.additional.startDate, d.additional.endDate, ' ~ ')],
-    ['មុខតំណែង / ឋានៈស្មើ', sj(d.additional.position, d.additional.equivalent)],
+    ['ថ្ងៃចាប់ផ្តើម', d.additional.startDate],
+    ['ថ្ងៃបញ្ចប់', d.additional.endDate],
+    ['មុខតំណែង', d.additional.position],
+    ['ឋានៈស្មើ', d.additional.equivalent],
     ['ក្រសួង', d.additional.ministry],
     ['ថ្នាក់', d.additional.level === 'central' ? 'ថ្នាក់កណ្តាល' : (d.additional.level === 'sub' ? 'ថ្នាក់ក្រោមជាតិ' : '')],
-    ['អង្គភាពថ្នាក់ក្រោម', [d.additional.sub1, d.additional.sub2, d.additional.sub3, d.additional.sub4, d.additional.sub5].filter(Boolean).join(' / ')],
+    ['អង្គភាពថ្នាក់ក្រោម', [d.additional.sub1, d.additional.sub2, d.additional.sub3, d.additional.sub4, d.additional.sub5].filter(Boolean).join(' - ')],
     ['ស្ថានភាព', d.additional.status],
     ['សម្គាល់', d.additional.note]
   ]);
 
   var eduSectionItems = [
-    ['កាលបរិច្ឆេទ', sj(d.education.startDate, d.education.endDate, ' ~ ')],
-    ['ថ្នាក់សិក្សា / វគ្គ', sj(d.education.level, d.education.course)],
-    ['សញ្ញាបត្រ / ជំនាញ', sj(d.education.degree, d.education.major)],
+    ['ថ្ងៃចាប់ផ្តើម', d.education.startDate],
+    ['ថ្ងៃបញ្ចប់', d.education.endDate],
+    ['ថ្នាក់សិក្សា', d.education.level],
+    ['វគ្គសិក្សា', d.education.course],
+    ['សញ្ញាបត្រ', d.education.degree],
+    ['ជំនាញ', d.education.major],
     ['គ្រឹះស្ថានសិក្សា', d.education.institution],
-    ['ខេត្ត/ក្រុង / ប្រទេស', sj(d.education.city, d.education.country)]
+    ['ទីក្រុង/ខេត្ត', d.education.city],
+    ['ប្រទេស', d.education.country],
+    ['សម្គាល់', d.education.note]
   ];
   (Array.isArray(d.education.entries) ? d.education.entries : []).forEach(function(e, idx) {
-    eduSectionItems.push([
-      'ប្រវត្តិការសិក្សា #' + (idx + 2),
-      [sj(e.startDate, e.endDate, ' ~ '), sj(e.level, e.degree), e.major, e.institution, e.country, e.note]
-        .filter(function(v) { return String(v || '').trim(); })
-        .join(' | ')
-    ]);
+    var n = idx + 2;
+    eduSectionItems.push(['ប្រវត្តិការសិក្សា #' + n + ' - ថ្ងៃចាប់ផ្តើម', e.startDate]);
+    eduSectionItems.push(['ប្រវត្តិការសិក្សា #' + n + ' - ថ្ងៃបញ្ចប់', e.endDate]);
+    eduSectionItems.push(['ប្រវត្តិការសិក្សា #' + n + ' - ថ្នាក់សិក្សា', e.level]);
+    eduSectionItems.push(['ប្រវត្តិការសិក្សា #' + n + ' - សញ្ញាបត្រ', e.degree]);
+    eduSectionItems.push(['ប្រវត្តិការសិក្សា #' + n + ' - ជំនាញ', e.major]);
+    eduSectionItems.push(['ប្រវត្តិការសិក្សា #' + n + ' - គ្រឹះស្ថានសិក្សា', e.institution]);
+    eduSectionItems.push(['ប្រវត្តិការសិក្សា #' + n + ' - ប្រទេស', e.country]);
+    eduSectionItems.push(['ប្រវត្តិការសិក្សា #' + n + ' - សម្គាល់', e.note]);
   });
   add(secTitle_('ប្រវត្តិការសិក្សា', 6), eduSectionItems);
 
-  add(secTitle_('ភាសា', 7), [
+  var languageSectionItems = [
     ['ភាសា', d.language.language],
-    ['អាន / សរសេរ', sj(d.language.reading, d.language.writing)],
-    ['ស្តាប់ / និយាយ', sj(d.language.listening, d.language.speaking)]
-  ]);
+    ['អាន', d.language.reading],
+    ['សរសេរ', d.language.writing],
+    ['ស្តាប់', d.language.listening],
+    ['និយាយ', d.language.speaking]
+  ];
+  (Array.isArray(d.language.entries) ? d.language.entries : []).forEach(function(l, idx) {
+    var n = idx + 2;
+    languageSectionItems.push(['ភាសា #' + n + ' - ឈ្មោះភាសា', l.language]);
+    languageSectionItems.push(['ភាសា #' + n + ' - អាន', l.reading]);
+    languageSectionItems.push(['ភាសា #' + n + ' - សរសេរ', l.writing]);
+    languageSectionItems.push(['ភាសា #' + n + ' - ស្តាប់', l.listening]);
+    languageSectionItems.push(['ភាសា #' + n + ' - និយាយ', l.speaking]);
+  });
+  add(secTitle_('ភាសា', 7), languageSectionItems);
 
   var warningRows = [
     ['ចំនួនលិខិតព្រមាន', String(warningItems.length)],
